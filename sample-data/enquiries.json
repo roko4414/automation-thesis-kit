@@ -1,0 +1,98 @@
+[
+  {
+    "id": "ENQ-001",
+    "channel": "web-form",
+    "received": "2026-03-02T08:14:00+01:00",
+    "from": "m.brunner@example.ch",
+    "raw": "Name: Martin Brunner\nPhone: 071 555 0142\nAddress: Rorschacherstrasse 88, 9000 St. Gallen\nWhat do you need? Kitchen renovation - need all the power points moved and 4 new downlights in the ceiling. Also the oven circuit needs upgrading, electrician who looked at it said 16A wasn't enough. Kitchen is being fitted 20 April so needs to be done before then.",
+    "notes_for_testing": "Complete. In area. Datable deadline. Should extract cleanly."
+  },
+  {
+    "id": "ENQ-002",
+    "channel": "email",
+    "received": "2026-03-02T19:47:00+01:00",
+    "from": "sandra.keller@example.ch",
+    "raw": "Subject: power out in half the flat\n\nHi, half our apartment has no power since this evening. The RCD keeps tripping when we reset it. We have a baby, is there any chance someone can come tonight or first thing tomorrow? We're in Wittenbach. Thanks, Sandra",
+    "notes_for_testing": "Urgent, emotional. No address detail, no phone. Tests urgency scoring AND the missing-field flag."
+  },
+  {
+    "id": "ENQ-003",
+    "channel": "sms",
+    "received": "2026-03-03T07:02:00+01:00",
+    "from": "+41791234567",
+    "raw": "hi its peter from the bakery on marktgasse. one of the ovens keeps cutting out. can u come look",
+    "notes_for_testing": "Minimal, lowercase, no punctuation. Commercial not residential. Tests extraction from very sparse input."
+  },
+  {
+    "id": "ENQ-004",
+    "channel": "phone-transcript",
+    "received": "2026-03-03T09:20:00+01:00",
+    "from": "071 555 0198",
+    "raw": "[Transcript, 2m14s] Caller: Yeah hello, I'm calling about — we've bought a place in Herisau and the inspection report flagged the whole board needs replacing, it's one of the old ones with the ceramic fuses. Reception: OK, and do you have the report? Caller: Yes I can email it. Reception: And when did you want this done? Caller: We take possession end of April so any time in May really. It's a three bedroom, built I think 1962. Reception: I'll get someone to call you back with a time to come look.",
+    "notes_for_testing": "Herisau is canton Appenzell Ausserrhoden — tests service-area boundary logic. Attachment referenced but not present."
+  },
+  {
+    "id": "ENQ-005",
+    "channel": "email",
+    "received": "2026-03-04T11:33:00+01:00",
+    "from": "info@example-immobilien.ch",
+    "raw": "Subject: Offerte Elektroinstallation Mehrfamilienhaus\n\nGuten Tag\n\nWir suchen einen Elektriker für ein Mehrfamilienhaus mit 6 Wohnungen in Gossau. Es geht um den Ersatz sämtlicher Zählerkästen sowie die Vorbereitung für Ladestationen in der Tiefgarage (4 Plätze vorerst, später Ausbau auf 12).\n\nKönnen Sie uns eine Offerte erstellen? Unterlagen liegen vor.\n\nFreundliche Grüsse\nR. Frei",
+    "notes_for_testing": "German. Large commercial job. Tests multilingual extraction and high-value routing."
+  },
+  {
+    "id": "ENQ-006",
+    "channel": "web-form",
+    "received": "2026-03-04T14:05:00+01:00",
+    "from": "tomsandiego@example.com",
+    "raw": "Name: Tom\nPhone: \nAddress: \nWhat do you need? how much for a light switch",
+    "notes_for_testing": "Junk / unqualifiable. No contact detail. Tests the disqualification path — the system must NOT invent a job here."
+  },
+  {
+    "id": "ENQ-007",
+    "channel": "email",
+    "received": "2026-03-05T16:41:00+01:00",
+    "from": "hauswart@example-schule.ch",
+    "raw": "Subject: Notbeleuchtung Jahreskontrolle\n\nGuten Tag, wir benötigen die jährliche Kontrolle der Notbeleuchtung für unser Schulhaus. Letztes Jahr hat das Ihre Firma gemacht (Auftrag 2025-0447). Gleicher Umfang. Bitte um Terminvorschlag für die Frühlingsferien.",
+    "notes_for_testing": "Repeat customer referencing a prior job number. Tests historical-job retrieval and whether the system can shortcut the quote."
+  },
+  {
+    "id": "ENQ-008",
+    "channel": "web-form",
+    "received": "2026-03-06T21:18:00+01:00",
+    "from": "a.meier@example.ch",
+    "raw": "Name: Anna Meier\nPhone: 078 555 0177\nAddress: Zürich Oerlikon\nWhat do you need? EV charger install in underground parking, Tesla wall connector, already have the unit",
+    "notes_for_testing": "Clearly outside service area (Zürich, ~80km). Tests geographic disqualification with a polite decline."
+  },
+  {
+    "id": "ENQ-009",
+    "channel": "phone-transcript",
+    "received": "2026-03-09T10:55:00+01:00",
+    "from": "071 555 0223",
+    "raw": "[Transcript, 47s] Caller: Hi, this is Daniela Roth, you did our bathroom last year. The heated towel rail has stopped working. Reception: Is anything tripping? Caller: No, it's just dead. Everything else in the bathroom is fine. Reception: OK, I'll get someone out. Caller: No rush, whenever suits.",
+    "notes_for_testing": "Repeat customer, small job, explicitly not urgent. Tests low-urgency routing and small-job handling."
+  },
+  {
+    "id": "ENQ-010",
+    "channel": "email",
+    "received": "2026-03-10T08:02:00+01:00",
+    "from": "baumgartner.j@example.ch",
+    "raw": "Subject: Re: Re: Offerte Gartenbeleuchtung\n\nHi again — following up on my email from three weeks ago, did you get a chance to look at this? Happy to go elsewhere if you're too busy, just let me know either way.\n\nOn 18 Feb, J. Baumgartner wrote:\n> Hi, looking for garden lighting along the driveway and around the terrace, maybe 15-20 fittings, house is in Abtwil. Can send photos.",
+    "notes_for_testing": "The one that got away. Quoted thread, mild irritation. Tests thread handling and whether the system detects an existing unanswered enquiry."
+  },
+  {
+    "id": "ENQ-011",
+    "channel": "sms",
+    "received": "2026-03-10T17:44:00+01:00",
+    "from": "+41795550111",
+    "raw": "burning smell from the fuse box. turned everything off at the main. what do i do",
+    "notes_for_testing": "Genuine safety emergency. Tests whether urgency scoring escalates to a human immediately rather than entering a normal quote flow. If the automation handles this as a routine enquiry, that is a finding."
+  },
+  {
+    "id": "ENQ-012",
+    "channel": "web-form",
+    "received": "2026-03-11T13:27:00+01:00",
+    "from": "office@example-architekten.ch",
+    "raw": "Name: Beat Züllig, Züllig Architekten\nPhone: 071 555 0290\nAddress: Neubau, Parzelle 442, Waldkirch\nWhat do you need? Complete electrical for a new single family house, ca. 190m2. Plans available. Need a fixed price for tender by 31 March. Also want a separate price for the PV-ready option (roof conduit + inverter space, panels not in scope).",
+    "notes_for_testing": "Large, deadline-driven, two priced options requested. Tests whether the drafted quote handles optional line items — this is where a draft-and-review gate earns its place."
+  }
+]

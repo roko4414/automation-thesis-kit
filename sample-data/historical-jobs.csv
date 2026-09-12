@@ -1,0 +1,26 @@
+job_no,completed,locality,job_type,scope_text,labour_hours,materials_chf,quoted_chf,final_chf,variation_reason
+2025-0102,2025-01-21,St. Gallen,kitchen-rewire,"Kitchen refit: relocate 6 sockets, 4 downlights, new 16A oven circuit, make good",14.5,742.00,2380.00,2380.00,
+2025-0118,2025-02-04,Gossau,board-replacement,"Replace ceramic fuse board with 12-way, 4 RCDs, new main earth, SNC",11.0,1064.00,2510.00,2760.00,Existing earth rod failed test, replacement required
+2025-0141,2025-02-19,Wittenbach,fault-finding,"Intermittent RCD trip, traced to failed bathroom heater element",3.5,0.00,420.00,420.00,
+2025-0166,2025-03-06,St. Gallen,ev-charger,"11kW wall charger in underground garage, 24m run from board, new 3-phase circuit",9.0,1897.00,3390.00,3390.00,
+2025-0203,2025-03-27,Abtwil,garden-lighting,"14 bollard lights along driveway, 2 circuits, timer and photocell",16.0,2694.00,4620.00,5010.00,Client added 3 additional fittings on site
+2025-0229,2025-04-11,Herisau,board-replacement,"1960s board replacement, 3-bed house, 12-way, full test and SNC",12.0,1108.00,2680.00,2680.00,
+2025-0247,2025-04-24,St. Gallen,commercial-fault,"Bakery oven circuit cutting out, replaced contactor and 32A MCB",4.0,186.00,610.00,610.00,
+2025-0288,2025-05-15,Gossau,new-build,"New 4.5-room apartment first fix and second fix, standard spec",78.0,6420.00,15800.00,16240.00,Additional data points requested by client
+2025-0301,2025-05-28,Waldkirch,new-build,"New single family house 175m2, complete electrical, PV conduit provision",104.0,9180.00,22400.00,22400.00,
+2025-0334,2025-06-12,Wittenbach,emergency,"Burning smell at board, out of hours, isolated and replaced damaged busbar",5.5,340.00,1180.00,1180.00,
+2025-0359,2025-06-25,St. Gallen,emergency-lighting,"Annual emergency lighting inspection, school, 62 luminaires",7.0,0.00,1780.00,1780.00,
+2025-0388,2025-07-09,Rorschach,bathroom,"Bathroom refit, heated towel rail circuit, IP-rated downlights, extractor",8.5,586.00,1620.00,1620.00,
+2025-0412,2025-07-24,Gossau,ev-charger,"2x 11kW chargers apartment building garage, load management unit",18.0,4210.00,7480.00,8120.00,Load management unit upgraded after supply check
+2025-0447,2025-08-06,St. Gallen,emergency-lighting,"Annual emergency lighting inspection, Schulhaus, 58 luminaires, 3 battery replacements",7.5,240.00,1650.00,1650.00,
+2025-0466,2025-08-20,Abtwil,fault-finding,"No power to garage subcircuit, damaged SWA cable located and repaired",6.0,290.00,880.00,1040.00,Excavation deeper than expected
+2025-0491,2025-09-03,St. Gallen,kitchen-rewire,"Kitchen renovation, 8 sockets, under-cabinet lighting, induction hob circuit",16.0,910.00,2740.00,2740.00,
+2025-0518,2025-09-18,Herisau,board-replacement,"Board replacement plus rewire of first floor lighting circuit",19.0,1420.00,3680.00,3680.00,
+2025-0544,2025-10-02,Wittenbach,multi-dwelling,"6-unit apartment block meter cabinet replacement, staged over 3 days",42.0,5240.00,10200.00,10940.00,Asbestos board backing found, specialist removal
+2025-0571,2025-10-16,St. Gallen,office-fitout,"Office fit-out 240m2, 32 workstations, floor boxes, lighting control",66.0,7890.00,15400.00,15400.00,
+2025-0603,2025-11-04,Gossau,garden-lighting,"Terrace and path lighting, 9 fittings, app-controlled dimming",11.0,1980.00,3240.00,3240.00,
+2025-0628,2025-11-19,Rorschach,ev-charger,"Single 22kW charger, detached house, 8m run",6.5,2140.00,3080.00,3080.00,
+2025-0655,2025-12-03,St. Gallen,fault-finding,"Recurring trip on ground floor ring, degraded socket found",4.5,76.00,540.00,540.00,
+2025-0672,2025-12-15,Waldkirch,new-build,"New house 210m2, complete electrical, EV provision, PV-ready",118.0,10640.00,25900.00,26780.00,Client upgraded lighting spec mid-build
+2026-0014,2026-01-15,St. Gallen,bathroom,"Ensuite addition, lighting, shaver point, underfloor heating connection",7.0,494.00,1380.00,1380.00,
+2026-0039,2026-02-02,Wittenbach,board-replacement,"Board replacement, 2-bed apartment, 12-way, SNC and measurement protocol",9.5,986.00,2280.00,2280.00,

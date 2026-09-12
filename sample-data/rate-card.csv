@@ -1,0 +1,26 @@
+code,description,unit,rate_chf,category,notes
+LAB-JRN,Journeyman electrician,hour,95.00,labour,Standard weekday 07:00-17:00
+LAB-APP,Apprentice,hour,52.00,labour,Must be supervised
+LAB-OT,Journeyman out of hours,hour,142.50,labour,Evenings weekends public holidays
+LAB-EMG,Emergency call-out first hour,job,220.00,labour,Includes travel within 20km
+TRV-STD,Travel standard,km,1.10,travel,Beyond 15km from depot
+MAT-SKT,Socket outlet Type 13 incl. box,each,38.00,materials,
+MAT-SWT,Switch single pole incl. box,each,32.00,materials,
+MAT-DIM,Dimmer switch LED compatible,each,86.00,materials,
+MAT-DLT,LED downlight 8W incl. driver,each,64.00,materials,
+MAT-CBL-15,Cable 3x1.5mm2,metre,4.20,materials,
+MAT-CBL-25,Cable 3x2.5mm2,metre,6.10,materials,
+MAT-CBL-60,Cable 5x6mm2,metre,18.40,materials,
+MAT-RCD,RCD 2-pole 30mA,each,124.00,materials,
+MAT-MCB,MCB single pole,each,28.00,materials,
+MAT-BRD-12,Distribution board 12 way,each,410.00,materials,
+MAT-BRD-24,Distribution board 24 way,each,720.00,materials,
+MAT-EVC-11,EV charge point 11kW,each,1450.00,materials,Excludes groundwork
+MAT-EVC-22,EV charge point 22kW,each,1980.00,materials,Excludes groundwork
+MAT-CDT,Conduit 20mm,metre,3.80,materials,
+MAT-GDN-LT,Garden bollard light IP65,each,178.00,materials,
+CRT-SNC,Sicherheitsnachweis / safety certificate,job,180.00,compliance,Required on all new installations
+CRT-MSR,Measurement protocol,job,140.00,compliance,
+CRT-EMG,Emergency lighting annual inspection per luminaire,each,18.00,compliance,
+DSP-STD,Disposal standard,job,65.00,other,
+MRK-MAT,Materials markup,percent,12,other,Applied to MAT- lines
