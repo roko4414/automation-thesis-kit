@@ -1,0 +1,58 @@
+{
+  "slug": "studio",
+  "label": "Photo & video studio",
+  "business": "a small photography and video studio",
+  "region": "canton St. Gallen, Switzerland",
+  "currency": "CHF",
+  "vat_rate": 8.1,
+  "unit_of_work": "shoot",
+  "enquiry_word": "enquiry",
+  "visit_word": "recce",
+  "quote_word": "proposal",
+  "job_word": "production",
+  "job_types": [
+    "wedding-full-day",
+    "wedding-half-day",
+    "engagement-shoot",
+    "family-portrait",
+    "corporate-headshots",
+    "corporate-event",
+    "product-packshot",
+    "product-lifestyle",
+    "brand-video",
+    "testimonial-video",
+    "interior-architecture",
+    "drone-aerial"
+  ],
+  "service_area": {
+    "in": [
+      "St. Gallen",
+      "Gossau",
+      "Wittenbach",
+      "Rorschach",
+      "Arbon",
+      "Herisau",
+      "Teufen",
+      "Flawil"
+    ],
+    "out": [
+      "Zermatt",
+      "Lugano",
+      "Geneva",
+      "Zurich Airport"
+    ],
+    "note": "Distance is a pricing input here, not a qualifier: travel time, a travel day and accommodation are billable line items, and destination work is normal and often welcome, so an enquiry from outside the area should be priced with travel added rather than declined the way a trade contractor would decline it."
+  },
+  "emergency_definition": "Genuinely time-critical means the date cannot be moved and the window closes within days: a wedding or a one-off event happening this week, a photographer or videographer dropping out of a booked date, or a client's campaign, print run or trade-fair stand that has a fixed delivery deadline already committed to a third party. A wedding is the sharpest form of this constraint, because the date is fixed by the couple and the venue and cannot be rescheduled to suit availability, so a late enquiry is either accepted now or lost entirely. Anything in this class must escalate to a human immediately, because the only useful answer is a yes or no on availability from someone who can actually commit the diary.",
+  "urgency_examples": {
+    "emergency": "Our wedding is this Saturday in Rorschach and our photographer just cancelled with a broken wrist - can anyone at all cover it?",
+    "urgent": "Our new website goes live on the 30th and we still have no team headshots - is there any chance of a half day next week?",
+    "scheduled": "We are getting married on 15 August 2026 at Schloss Dottenwil and would like to talk about full day coverage.",
+    "no_rush": "Sometime this autumn we would like family photos with the kids, no particular hurry, whatever suits your diary."
+  },
+  "high_value_threshold_chf": 2500,
+  "threshold_note": "A half day corporate shoot with a basic web licence lands around CHF 1,200-1,800, so a CHF 2,500 line catches full wedding packages, multi-day productions and anything carrying a broad usage licence - the work where a wrong number is expensive and hard to walk back (figure illustrative).",
+  "compliance_note": "Every proposal must state the usage licence being granted - media, territory and duration - and must name who is responsible for obtaining model releases from identifiable people and property or location releases from venue owners; the underlying Swiss position on personality rights in one's own image and on copyright in photographic works is summarised here as illustrative only and has not been legally verified.",
+  "pricing_note": "Pricing is built from day and half day rates plus packages, with post-production charged by the hour or per retouched image, travel and accommodation added at cost, and equipment or crew as separate lines. The part that breaks naive automation is the usage licence: the same one day shoot can be CHF 1,850 for the studio's own social media or CHF 8,000 with a Europe-wide advertising licence, so the price is driven by what the client will do with the images rather than by how long the shoot takes.",
+  "what_makes_it_different": "Availability is a hard binary on a named date rather than a scheduling puzzle - a second wedding on an already booked Saturday cannot be solved with a better price, a longer lead time or a bigger crew, which is the one failure mode no amount of quoting intelligence can rescue. The deliverable is creative and taste-dependent, so qualification depends on judgements about style fit that do not reduce to structured fields, and a mismatched booking is a worse outcome than a lost one. And the price hinges on usage rights the enquirer usually does not think to mention - the customer asking for 'just a few product photos' for a national campaign is the same sentence as the customer wanting them for an Instagram post, with an order of magnitude between the two proposals."
+}

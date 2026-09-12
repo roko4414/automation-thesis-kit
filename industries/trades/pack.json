@@ -1,0 +1,36 @@
+{
+  "slug": "trades",
+  "label": "Electrical contractor",
+  "business": "a small electrical contracting business",
+  "region": "canton St. Gallen, Switzerland",
+  "currency": "CHF",
+  "vat_rate": 8.1,
+  "unit_of_work": "job",
+  "enquiry_word": "enquiry",
+  "visit_word": "site visit",
+  "quote_word": "quote",
+  "job_word": "job",
+  "job_types": [
+    "kitchen-rewire", "board-replacement", "fault-finding", "ev-charger",
+    "garden-lighting", "new-build", "bathroom", "emergency-lighting",
+    "office-fitout", "multi-dwelling", "commercial-fault", "emergency"
+  ],
+  "service_area": {
+    "in": ["St. Gallen", "Gossau", "Wittenbach", "Abtwil", "Waldkirch", "Rorschach", "Herisau"],
+    "out": ["Zurich", "Winterthur", "Chur"],
+    "note": "Geography is a hard qualifier here: the van has to get there and back, so anything beyond roughly 25km of St. Gallen is refused rather than priced. This is the strictest area logic of any pack, which is why it is the useful baseline to compare the others against.",
+    "boundary_case": "Herisau is in a different canton but well inside the radius — the case that catches naive geography."
+  },
+  "emergency_definition": "Burning smell, smoke, visible arcing, electric shock, exposed live parts, water reaching electrics, or total loss of power to a dwelling where a vulnerable occupant is mentioned. These must leave the automated path immediately and reach a person, because the safe response is to isolate the supply and attend, not to enter a quoting queue.",
+  "urgency_examples": {
+    "emergency": "burning smell from the fuse box. turned everything off at the main. what do i do",
+    "urgent": "Half our apartment has no power since this evening and the RCD keeps tripping.",
+    "scheduled": "Kitchen is being fitted 20 April so it needs doing before then.",
+    "no_rush": "The heated towel rail has stopped working. No rush, whenever suits."
+  },
+  "high_value_threshold_chf": 5000,
+  "threshold_note": "Above roughly CHF 5,000 a job is usually multi-day and schedule-disrupting, so the owner wants to see the booking before it is offered.",
+  "compliance_note": "New installations require a Sicherheitsnachweis (safety certificate) and a measurement protocol; both are priced line items and must never be omitted from a quote.",
+  "pricing_note": "Labour is hourly by grade with an out-of-hours multiplier, materials are per-item with a percentage markup, and compliance is a flat per-job fee. Estimating hours from a scope description is the hard part and the main source of pricing error.",
+  "what_makes_it_different": "This is the baseline pack. Scope is established by physically looking at the work, so the site visit produces good structured input before anything is priced. Geography is a genuine hard constraint, and the consequence of a wrong price is money rather than safety or law. Every other pack in the kit differs from this one in at least one of those three dimensions, which is what makes the comparison worth writing up."
+}

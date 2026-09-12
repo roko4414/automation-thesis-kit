@@ -1,0 +1,444 @@
+{
+  "name": "W4 \u00b7 Follow-up \u2014 Electrical contractor",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## W4 \u2014 Follow-up \u00b7 Electrical contractor\n\n**Boundary: automated, with a hard stop the moment a human replies.**\nLow consequence per message, but the failure mode is reputational and compounding, so the stop condition is absolute rather than probabilistic. Scored 2/3/5.\n\n### Three touches. Ever.\nDay 3, day 7, day 14, then it escalates to the owner and the sequence ends. A fourth automated message is not follow-up, it is harassment \u2014 and in a town this size the business cannot afford it.\n\n### Confound warning\nWin rate will move and you will want to claim it. Don't. At n\u224825 you cannot separate the sequence from market conditions. Report **touches delivered vs intended** \u2014 that one is clean, and it is the thing the automation actually changed.",
+        "width": 500,
+        "height": 440,
+        "color": 5
+      },
+      "id": "39dc7d2d-2c12-47c3-bdae-09568c40e8f7",
+      "name": "Note 1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -840,
+        -380
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 8 * * *"
+            }
+          ]
+        }
+      },
+      "id": "441f6ca9-cda2-44bf-ace8-a55075136b04",
+      "name": "Daily 08:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -300,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "REPLACE_WITH_YOUR_SPREADSHEET_ID"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "quotes_sent"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "decision",
+              "lookupValue": ""
+            }
+          ]
+        },
+        "combineFilters": "AND",
+        "options": {}
+      },
+      "id": "bbd65d0d-1e76-4c80-aae4-16ab010ab1de",
+      "name": "Get open quotes",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -80,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const SCHEDULE_DAYS = { 1: 3, 2: 7, 3: 14 };\nconst MAX_TOUCHES = 3;\nconst now = Date.now();\nconst out = [];\n\nfor (const item of items) {\n  const q = item.json;\n  if (!q.job_id || !q.sent_at) continue;\n\n  const daysSince = Math.floor((now - new Date(q.sent_at).getTime()) / 86400000);\n  const sent = Number(q.touches_sent ?? 0);\n  const next = sent + 1;\n\n  // The absolute stop. Checked before anything else, and again in the IF node after\n  // this one, because a duplicated guard is cheap and a message sent over the top of a\n  // live conversation is not recoverable.\n  const humanReplied = String(q.inbound_since_sent ?? '').trim().length > 0;\n\n  if (humanReplied) {\n    out.push({ json: { ...q, send: false, stopped_reason: 'human_reply', touch_number: next } });\n    continue;\n  }\n  if (next > MAX_TOUCHES) {\n    out.push({ json: { ...q, send: false, stopped_reason: 'escalated', touch_number: next } });\n    continue;\n  }\n  if (daysSince < SCHEDULE_DAYS[next]) continue;  // not due yet, say nothing\n\n  out.push({\n    json: {\n      ...q, send: true, touch_number: next, days_since_sent: daysSince,\n      stance: next === 1 ? 'assume it was missed, no ask beyond did this arrive'\n            : next === 2 ? 'offer to answer questions or adjust scope, name the total'\n            : 'close it out, ask for a yes or a no, say the quote expires, thank them either way',\n    },\n  });\n}\nreturn out;"
+      },
+      "id": "efb711bb-aeb1-41d4-a697-ac9b232f56de",
+      "name": "Which touch is due",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        160,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "950b081c-c1da-4834-95b9-ca8755937bee",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json.send }}",
+              "rightValue": ""
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "90a73a4a-fb2b-488a-b800-8c24b0dabea5",
+      "name": "Safe to send?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        400,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Write follow-up touch {{ $json.touch_number }}.\n\nLanguage: {{ $json.language }}\nCustomer: {{ $json.customer_name }}\nJob: {{ $json.described_scope }}\nQuote total: CHF {{ $json.total_chf }}\nSent: {{ $json.sent_at }} ({{ $json.days_since_sent }} days ago)\nStance for this touch: {{ $json.stance }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You write short follow-up messages chasing an unanswered quote for a small electrical contracting business in canton St. Gallen, Switzerland.\n\nWrite in the customer's language. German uses Sie.\n\nNo pressure tactics: no fake scarcity, no invented deadlines, no last chance. A small contractor's reputation in a town this size is the entire business.\n\nMake declining easy and explicit \u2014 every message offers a one-line way out. The goal is a decision, not a yes.\n\nUnder 80 words. Plain text, no markdown. No subject line for touches 2 and 3; they thread onto the original."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "id": "839478f2-05f5-4c3f-8c46-cf686700d708",
+      "name": "Compose the nudge",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        640,
+        -220
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "id",
+          "value": "claude-sonnet-4-5-20250929"
+        },
+        "options": {
+          "temperature": 0.3,
+          "maxTokensToSample": 512
+        }
+      },
+      "id": "d7b8dbd7-9616-4063-bb2e-d063c076e408",
+      "name": "Claude \u2014 follow-up",
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [
+        620,
+        40
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "fromEmail": "workflow@example.ch",
+        "toEmail": "={{ $('Which touch is due').item.json.email }}",
+        "subject": "=Re: your quote \u2014 {{ $('Which touch is due').item.json.job_id }}",
+        "emailFormat": "text",
+        "text": "={{ $json.text }}",
+        "options": {}
+      },
+      "id": "df03c65c-5421-48e5-9b73-4423bc0eed3b",
+      "name": "Send follow-up",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        880,
+        -220
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "REPLACE_WITH_YOUR_SPREADSHEET_ID"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "followups"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "job_id": "={{ $json.job_id }}",
+            "touch_number": "={{ $json.touch_number }}",
+            "sent": "={{ $json.sent }}",
+            "stopped_reason": "={{ $json.stopped_reason }}",
+            "at": "={{ $json.at }}"
+          },
+          "schema": [
+            {
+              "id": "job_id",
+              "displayName": "job_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "touch_number",
+              "displayName": "touch_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sent",
+              "displayName": "sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "stopped_reason",
+              "displayName": "stopped_reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "at",
+              "displayName": "at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "matchingColumns": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "id": "47881eed-dccf-446f-a73f-68780a616587",
+      "name": "Log the stop",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        640,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "REPLACE_WITH_YOUR_SPREADSHEET_ID"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "followups"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "job_id": "={{ $json.job_id }}",
+            "touch_number": "={{ $json.touch_number }}",
+            "sent": "={{ $json.sent }}",
+            "stopped_reason": "={{ $json.stopped_reason }}",
+            "at": "={{ $json.at }}"
+          },
+          "schema": [
+            {
+              "id": "job_id",
+              "displayName": "job_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "touch_number",
+              "displayName": "touch_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "sent",
+              "displayName": "sent",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "stopped_reason",
+              "displayName": "stopped_reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "at",
+              "displayName": "at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "matchingColumns": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "id": "2702a8ba-df6b-4106-ad19-a28ca9dabdb3",
+      "name": "Log the touch",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1120,
+        -220
+      ]
+    }
+  ],
+  "connections": {
+    "Claude \u2014 follow-up": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Compose the nudge",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Daily 08:00": {
+      "main": [
+        [
+          {
+            "node": "Get open quotes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get open quotes": {
+      "main": [
+        [
+          {
+            "node": "Which touch is due",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Which touch is due": {
+      "main": [
+        [
+          {
+            "node": "Safe to send?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Safe to send?": {
+      "main": [
+        [
+          {
+            "node": "Compose the nudge",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Log the stop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compose the nudge": {
+      "main": [
+        [
+          {
+            "node": "Send follow-up",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send follow-up": {
+      "main": [
+        [
+          {
+            "node": "Log the touch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "instanceId": ""
+  }
+}

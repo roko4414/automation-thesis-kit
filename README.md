@@ -1,52 +1,79 @@
 # Automation Boundary Thesis Kit
 
-Five importable n8n workflows for a trade contractor's quote-to-cash process, the sample
-data to run them, and the measurement design to write them up.
+A starting kit for a master's thesis on workflow automation.
 
-**Read it here → https://roko4414.github.io/automation-thesis-kit/**
+**Start here → https://roko4414.github.io/automation-thesis-kit/**
 
-For a master's thesis on workflow automation: build a live automation on n8n, wrap it so
-someone else can use it, and make the thesis the documentation and justification of that
-build.
+## The idea
 
-## What's here
+Almost every small business runs the same five steps: a message arrives, you book a time
+to look at the work, you send a price, you chase it up, you finish and invoice.
+
+This kit automates all five — except sending the price. That step is drafted by the
+system and approved by a person, always.
+
+That one rule is the thesis. Not "I built an automation", but: *here is exactly where I
+let the computer decide, here is where I did not, and here is the evidence I was right.*
+
+## Five kinds of business
+
+The same five workflows, specialised for five industries. Each folder under
+`industries/` holds the workflows, twelve realistic example messages, and a price list.
+
+| Folder | Business | What is different about it |
+|---|---|---|
+| `trades` | Electrical contractor | The baseline. Scope is established by looking at the work, and geography is a hard limit. |
+| `dental` | Private dental practice | Risk moves to the front — sorting symptoms is nearly clinical — while pricing becomes almost deterministic. The inverse of trades. |
+| `wellness` | Physiotherapy practice | The strongest case for a human gate. Some messages carry clinical red flags, one of them written calmly enough to slip past a careless triage. |
+| `advisory` | Tax and accounting firm | No visit at all, and a conflict-of-interest check must clear *before* anything is priced. |
+| `studio` | Photo and video studio | Distance is a price input rather than a refusal, and price tracks image usage rights rather than hours worked. |
+
+Only one is needed for a thesis. The other four exist so something can be said about
+whether the pattern travels — which is itself a finding, either way.
+
+## Layout
 
 | | |
 |---|---|
-| `workflows/` | Five n8n workflows, importable. Annotated on the canvas with the boundary decision behind each gate. |
-| `sample-data/` | 12 enquiries, a 25-line rate card, 25 completed jobs, and the job-record schema. |
-| `prompts/` | Versioned prompts for extraction, quote drafting and follow-up. |
-| `scripts/` | The generator that builds the workflows, and the validator that checks them. |
-| `docs/` | How n8n workflow JSON works, and the eleven ways an import breaks silently. |
+| `industries/<slug>/` | Five workflows, `enquiries.json`, `price-list.csv`, `pack.json` |
+| `prompts/` | Versioned prompts for extraction, drafting and follow-up |
+| `docs/` | How the workflow JSON works; the job-record schema |
+| `scripts/` | The generator and the validator |
+| `reference.html` | The detailed version of the site |
 
-## Quick start
+## Before importing anything
 
 ```bash
-n8n --version                                        # check before anything else
-python3 scripts/validate-workflows.py workflows/*.json
+n8n --version
+python3 scripts/validate-workflows.py industries/*/workflows/*.json
 ```
 
-Then make a Google Sheet, replace `REPLACE_WITH_YOUR_SPREADSHEET_ID`, and import each
-workflow through *Workflows → ⋯ → Import from File*. Full steps on the site.
+The validator checks the failure modes that let an n8n import *look* like it worked
+while silently dropping connections. Details in `docs/n8n-json-reference.md`.
 
-## The question it exists to answer
+## How the industries work
 
-> In a high-variance, low-data-maturity small business, where should the boundary between
-> automated and human decision sit, and what evidence justifies placing it there?
+One skeleton, many industries. The workflows are written with `<<TOKENS>>` where the
+industry shows through, and each `pack.json` supplies the values.
 
-Each workflow carries a variance / consequence / data-availability score and a gate
-placement that follows from it. W3 (quote drafting) holds an unconditional human review
-and writes what the reviewer changed — which is where the results chapter comes from.
+```bash
+python3 scripts/build_workflows.py      # rebuilds all 25 workflow files
+```
+
+Adding a sixth industry means writing a `pack.json` and rerunning that. If it ever needs
+surgery on the workflows themselves, that is worth writing down — it is the
+transferability claim failing, which is a real result.
 
 ## Status
 
-Workflows are validated **structurally**: envelope, node shapes, unique names, connection
+Workflows are validated structurally: envelope, node shapes, unique names, connection
 integrity, AI cluster wiring, pinned typeVersions. They have **not** been run against a
 live n8n instance. Import one end to end before building on top of it.
 
-No credentials ship in any file, deliberately — see `docs/n8n-json-reference.md`.
+No credentials ship in any file, deliberately.
 
 ## Scope
 
-Contains no client or third-party engagement material. The reference business is a
-composite of publicly observable characteristics of small trade contractors.
+Contains no client or third-party material. The businesses are composites built from how
+these trades generally work, not real companies. Prices and any regulatory detail are
+illustrative and marked as such in the files.

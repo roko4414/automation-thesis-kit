@@ -1,0 +1,58 @@
+{
+  "slug": "dental",
+  "label": "Private dental practice",
+  "business": "a private dental practice",
+  "region": "canton St. Gallen, Switzerland",
+  "currency": "CHF",
+  "vat_rate": 8.1,
+  "unit_of_work": "treatment",
+  "enquiry_word": "enquiry",
+  "visit_word": "consultation",
+  "quote_word": "treatment plan",
+  "job_word": "treatment",
+  "job_types": [
+    "check-up-and-hygiene",
+    "composite-filling",
+    "root-canal-treatment",
+    "extraction",
+    "wisdom-tooth-surgery",
+    "ceramic-crown",
+    "fixed-bridge",
+    "single-implant",
+    "denture-or-partial",
+    "periodontal-treatment",
+    "clear-aligner-course",
+    "whitening-or-veneers"
+  ],
+  "service_area": {
+    "in": [
+      "St. Gallen",
+      "Gossau SG",
+      "Wittenbach",
+      "Goldach",
+      "Rorschach",
+      "Teufen AR",
+      "Flawil",
+      "Arbon TG"
+    ],
+    "out": [
+      "Lugano",
+      "Geneva",
+      "Sion",
+      "Zermatt"
+    ],
+    "note": "Geography matters far less here than for a trade contractor: the patient travels to the chair, not the other way round, so the boundary is about whether someone will realistically keep a recall appointment every six months rather than whether a van can reach them — a Wil or Bregenz commuter who passes through St. Gallen daily is a better fit than a Rorschach resident without a car, and the automation should never hard-reject on postcode alone."
+  },
+  "emergency_definition": "A genuine emergency is a presentation with airway, bleeding or time-limited tissue risk: facial or submandibular swelling that is spreading, closing the eye, crossing the midline of the neck or accompanied by fever, trismus or difficulty swallowing or breathing; bleeding after an extraction that has not stopped after 30 minutes of firm pressure, especially in a patient on anticoagulants; and dental trauma in which a permanent tooth has been knocked out or displaced, where the reimplantation window is measured in tens of minutes. These must reach a clinician by voice immediately and must never sit in an automated triage queue, be answered by an auto-reply, or be offered the next available online slot. Severe pain alone is urgent but not an emergency; pain plus swelling plus fever is.",
+  "urgency_examples": {
+    "emergency": "My husband's whole left cheek has ballooned up since last night, his eye is nearly shut, he's got a temperature and it hurts to swallow — what do we do?",
+    "urgent": "I've had throbbing pain in a back tooth for three days now, painkillers stopped touching it and I barely slept — can someone see me this week?",
+    "scheduled": "The corner of one of my front fillings chipped off a while ago. It doesn't hurt but it catches on my tongue. Happy to wait for a normal appointment.",
+    "no_rush": "We've just moved to Wittenbach and are looking for a new family dentist. Two adults, two kids (7 and 10), nothing wrong, just due for check-ups sometime in the next few months."
+  },
+  "high_value_threshold_chf": 3000,
+  "threshold_note": "Below roughly CHF 3,000 the work is single-visit restorative or hygiene that any diary slot can absorb, whereas above it you are almost always into implants, multi-unit prosthetics, aligner courses or staged perio-plus-restorative sequencing — treatments that need the treating dentist to confirm the plan, the staging and the chair time personally before anything is promised to the patient.",
+  "compliance_note": "Illustrative, not verified: a Swiss dental treatment plan is conventionally itemised in tariff points (Taxpunkte) with the applied point value (Taxpunktwert) stated on the document, and it should say plainly which tariff is being applied — the statutory accident/disability/military tariff where a case qualifies, or the practice's private tariff otherwise — since basic health insurance (KVG) does not cover routine dental care and the patient pays; treat the exact tariff, point value and disclosure obligations as needing verification against current SSO and cantonal guidance before use in the thesis.",
+  "pricing_note": "Pricing is per item of treatment rather than per hour, built from a tariff-point catalogue where each procedure carries a fixed point count and the practice multiplies by its own point value, with laboratory work and implant components passed through separately at cost plus a handling margin — so a treatment plan is a sequenced list of coded items, not a labour-and-materials estimate. Insurance affects presentation more than price: most work is patient-paid, but accident, supplementary dental insurance and paediatric cases change who receives the document and what pre-approval is needed, and a note on VAT is warranted because medically indicated treatment is generally VAT-exempt in Switzerland while purely cosmetic work is not — a distinction that should be verified rather than assumed.",
+  "what_makes_it_different": "The stress point moves from logistics to clinical triage and consent. For a trade contractor the risky automated decision is a scheduling or pricing one and the worst case is an unhappy customer, whereas here the intake step is doing something that looks like clinical assessment on free text describing symptoms, and a mis-sorted swelling is a patient safety event rather than a service failure — so the human boundary sits much earlier, at classification, not at the quote. Pricing meanwhile is more automatable than in trades, because a coded tariff makes the priced document nearly deterministic once the diagnosis is fixed, but the follow-up is far more sensitive: chasing an unaccepted treatment plan is chasing someone who is frightened or short of money, and the same nudge cadence that works for a rewiring quote reads as predatory. The comparative value for the thesis is that dentistry inverts the usual assumption — the drafting step is safer to automate than the intake step, which is the opposite of the trades case."
+}

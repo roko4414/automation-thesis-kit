@@ -1,0 +1,31 @@
+code,description,unit,rate_chf,category,notes
+CON-INI,Initial consultation and full examination new patient,session,140.00,consultation,Includes charting and treatment planning discussion. Illustrative figure
+CON-REC,Recall examination existing patient,session,95.00,consultation,Illustrative figure
+CON-2ND,Second opinion review of an external treatment plan,session,180.00,consultation,Requires own examination; no pricing given on external records alone
+CON-EMG,Emergency attendance outside surgery hours,session,290.00,consultation,Attendance fee only; treatment billed separately. Illustrative figure
+CON-ANX,Extended first appointment for anxious patient talk only no examination,session,120.00,consultation,No clinical treatment performed. Offered where the patient asks to discuss before being examined
+DIA-PAR,Periapical x-ray single tooth,each,48.00,diagnostics,Illustrative figure
+DIA-OPG,Panoramic radiograph OPG,each,135.00,diagnostics,Illustrative figure
+DIA-CBC,Cone beam CT 3D scan for implant planning,each,390.00,diagnostics,Illustrative figure
+REG-RAD,Radiation protection compliance and equipment quality assurance levy,each,6.00,compliance,ILLUSTRATIVE COMPLIANCE LINE. Dental radiography in Switzerland is subject to federal radiation protection requirements; the existence and amount of a per-exposure levy has NOT been verified and this figure is a placeholder for the thesis
+PRV-HYG,Dental hygiene appointment 60 minutes,session,190.00,preventive,Illustrative figure
+PRV-HY9,Extended dental hygiene 90 minutes heavy calculus,session,275.00,preventive,Illustrative figure
+RES-CO1,Composite filling one surface,tooth,195.00,restorative,Illustrative figure
+RES-CO2,Composite filling two surfaces,tooth,285.00,restorative,Illustrative figure
+RES-CO3,Composite filling three or more surfaces,tooth,375.00,restorative,Illustrative figure
+END-RC1,Root canal treatment single canal,tooth,720.00,endodontics,Excludes final restoration. Illustrative figure
+END-RC3,Root canal treatment molar three to four canals,tooth,1350.00,endodontics,Excludes crown. Illustrative figure
+PER-SRP,Periodontal scaling and root planing per quadrant,quadrant,320.00,periodontics,Usually staged over multiple visits. Illustrative figure
+SUR-EXS,Simple extraction,tooth,210.00,surgery,Illustrative figure
+SUR-EXW,Surgical removal of impacted wisdom tooth,tooth,520.00,surgery,Illustrative figure
+SUR-IMP,Implant fixture placement including surgery,each,2350.00,surgery,Excludes abutment and crown. Illustrative figure
+SUR-BON,Bone augmentation or sinus lift,each,980.00,surgery,Excludes graft material. Illustrative figure
+PRO-CRC,Ceramic crown including laboratory work,tooth,1650.00,prosthetics,Illustrative figure
+PRO-BR3,Fixed bridge three units,each,4300.00,prosthetics,Illustrative figure
+PRO-DEN,Removable partial denture cast framework,each,2600.00,prosthetics,Illustrative figure
+ORT-ALN,Clear aligner course full treatment both arches,each,6800.00,orthodontics,Includes refinements and retainers. Illustrative figure
+COS-WHT,In-practice tooth whitening both arches,each,690.00,cosmetic,Purely cosmetic; VAT treatment differs from medically indicated work and must be verified
+COS-VEN,Ceramic veneer including laboratory work,tooth,1550.00,cosmetic,Purely cosmetic; VAT treatment differs from medically indicated work and must be verified
+SUR-LAB,Laboratory and implant component handling surcharge,percent,12.00,surcharge,MARKUP LINE. Applied to the pass-through cost of external laboratory work and implant components
+SUR-OOH,Out of hours surcharge evenings weekends public holidays,percent,50.00,surcharge,Applied to treatment items not to the attendance fee
+ADM-FTA,Failed to attend or late cancellation under 24 hours,each,130.00,admin,Charged at practice discretion

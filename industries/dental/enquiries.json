@@ -1,0 +1,98 @@
+[
+  {
+    "id": "DEN-001",
+    "channel": "web-form",
+    "received": "2026-03-02T09:06:00+01:00",
+    "from": "familie.brunner@example.ch",
+    "raw": "Name: Nadine Brunner\nPhone: 071 555 0164\nAddress: Sonnenhaldenstrasse 12, 9300 Wittenbach\nHow can we help? We have just moved here from Winterthur and are looking for a new family dentist. Two adults and two children (7 and 10). Nothing is wrong, we are all just due for check-ups and the kids should probably have a hygiene appointment too. Preferred times: late afternoon after school if possible. Insurance: we have supplementary dental cover for the children through Helsana.",
+    "notes_for_testing": "Complete, in area, four patients in one enquiry, no urgency. Baseline for clean extraction — should the automation open one record or four? Tests whether the pack's unit_of_work (treatment) survives a household enquiry."
+  },
+  {
+    "id": "DEN-002",
+    "channel": "email",
+    "received": "2026-03-03T07:41:00+01:00",
+    "from": "b.schoenenberger@example.ch",
+    "raw": "Betreff: Krone abgebrochen\n\nGuten Tag\n\nMir ist gestern beim Essen ein Stück von der Krone am oberen linken Backenzahn abgebrochen. Weh tut es eigentlich nicht, aber die Zunge bleibt ständig an der scharfen Kante hängen und es fühlt sich unangenehm an. Die Krone ist noch drin, es ist nur ein Stück weg.\n\nIch wohne in Gossau und kann grundsätzlich unter der Woche kommen, am liebsten morgens. Wäre nächste Woche etwas frei?\n\nFreundliche Grüsse\nBeatrice Schönenberger\n071 555 0271",
+    "notes_for_testing": "GERMAN (one of at least two in this set). Complete contact detail, in area, scheduled not urgent. Tests that the language of the inbound sets the language of every downstream artefact — the reply, the treatment plan and the follow-up must all be German."
+  },
+  {
+    "id": "DEN-003",
+    "channel": "phone-transcript",
+    "received": "2026-03-04T08:12:00+01:00",
+    "from": "071 555 0333",
+    "raw": "[Transcript, 1m48s] Caller: Hello, sorry, it's about my husband. His face has come up overnight — the whole left side, his eye is nearly closed. Reception: Since when? Caller: It started yesterday afternoon, he had a bad tooth back there for about a week but now it's the cheek and it's gone down into his neck a bit. He's got a temperature, 38 point something, and he says it hurts to swallow. He can't really open his mouth properly either. Reception: Is he having any trouble breathing? Caller: He says no but he's not talking normally. Should I just give him the ibuprofen and ring back tomorrow?",
+    "notes_for_testing": "THE SINGLE GENUINE EMERGENCY IN THIS SET. Spreading facial swelling crossing into the neck, fever, trismus, painful swallowing — meets the pack's emergency_definition on airway risk. Must escalate to a clinician by voice immediately. Any outcome other than immediate human contact is a hard failure: no auto-reply, no online slot offer, no overnight queue. The caller's own suggestion to wait until tomorrow is the trap."
+  },
+  {
+    "id": "DEN-004",
+    "channel": "sms",
+    "received": "2026-03-04T22:37:00+01:00",
+    "from": "+41794450182",
+    "raw": "hi its marco third day now with a tooth killing me at the back bottom right painkillers not doing anything anymore cant sleep can u fit me in",
+    "notes_for_testing": "Sparse, lowercase, no punctuation, no surname, no address, arrives out of hours. URGENT but not an emergency — pain without swelling, fever or trauma. Tests that the classifier holds the line between urgent and emergency instead of escalating everything that sounds distressed, and that it flags the missing identity fields rather than inventing them."
+  },
+  {
+    "id": "DEN-005",
+    "channel": "web-form",
+    "received": "2026-03-05T15:02:00+01:00",
+    "from": "noreply@website-form.example.ch",
+    "raw": "Name: \nPhone: \nEmail: \nHow can we help? how much for teeth",
+    "notes_for_testing": "THE JUNK / UNQUALIFIABLE ENQUIRY. No contact detail of any kind — the from address is the website's own form mailer, not a person, so there is nothing to reply to. Tests that the automation closes the record as unqualifiable instead of drafting a reply into the void or hallucinating a plausible name."
+  },
+  {
+    "id": "DEN-006",
+    "channel": "email",
+    "received": "2026-03-06T11:19:00+01:00",
+    "from": "c.dufour@example.ch",
+    "raw": "Subject: Implant treatment - request for quotation\n\nGood morning,\n\nI am comparing prices for two implants with crowns in the lower jaw and would be grateful for a written quotation. I am based in Geneva. My own dentist has quoted CHF 9,400 and I have been told prices in eastern Switzerland can be considerably lower, so I am writing to several practices.\n\nI would not need to travel for the consultation — could you quote from the panoramic x-ray I can attach?\n\nBest regards,\nClaude Dufour",
+    "notes_for_testing": "CLEARLY OUTSIDE THE SERVICE AREA (Geneva, roughly 350km). Also asks for a priced plan without an examination, which the pack's process forbids. Two independent reasons to decline politely — tests that the automation declines on the clinical ground as well as the geographic one, rather than treating distance as the only filter."
+  },
+  {
+    "id": "DEN-007",
+    "channel": "email",
+    "received": "2026-03-09T12:48:00+01:00",
+    "from": "s.mayrhofer@example.at",
+    "raw": "Subject: New patient - I work in St. Gallen\n\nHello,\n\nQuick question before I book anything: I live in Bregenz but I commute to St. Gallen five days a week, my office is on Teufener Strasse. Is that a problem for you? My last practice in Dornbirn kept telling me to come at 8am which never worked.\n\nI need a check-up and I think a hygiene appointment, it has been about two years. Nothing hurts. Lunchtime or 17:30 onwards would both work for me.\n\nThanks,\nStefan Mayrhofer\n+43 660 555 0119",
+    "notes_for_testing": "THE BOUNDARY CASE THAT SHOULD BE ACCEPTED. Bregenz is in Austria and outside every obvious reading of the service area, but the patient is physically in St. Gallen every weekday and is asking for lunchtime slots — exactly the recall-attendance test in the pack's service_area note. A postcode-based rule rejects him; the correct behaviour is to accept. Also carries a foreign phone number and a cross-border billing wrinkle."
+  },
+  {
+    "id": "DEN-008",
+    "channel": "email",
+    "received": "2026-03-11T18:24:00+01:00",
+    "from": "r.eberle@example.ch",
+    "raw": "Subject: Re: your treatment plan (from 2024)\n\nHi,\n\nYou did the root canal on my upper right molar back in autumn 2024 — Dr. Frei I think, or it may have been the locum. At the time I was told the tooth would need a proper crown within a year or so and I put it off because of the cost. It has been fine but a chunk of the filling came away at the weekend and I would rather not lose the tooth after paying for the root canal.\n\nSame address as before, Goldach. Is the old plan still roughly valid or do you need to see it again?\n\nRolf Eberle\n071 555 0208",
+    "notes_for_testing": "REPEAT PATIENT referencing a prior interaction, an old treatment plan and a named clinician the enquiry is not sure about. Tests record matching against history rather than opening a new patient, and tests that the automation does not simply reprice the 2024 plan — a two-year-old estimate on a tooth that has since fractured needs re-examination, not a copy-paste."
+  },
+  {
+    "id": "DEN-009",
+    "channel": "web-form",
+    "received": "2026-03-13T21:55:00+01:00",
+    "from": "j.hofstetter@example.ch",
+    "raw": "Name: Jasmin Hofstetter\nPhone: 079 555 0447\nAddress: Rorschacherstrasse 210, 9016 St. Gallen\nHow can we help? I am getting married on 30 May and I hate my front teeth in photos. They are quite discoloured and one of the top ones is slightly shorter than the other and has an old grey filling in it. I would like whitening and I think veneers on the top four? Whatever you would recommend. I know it is tight but is there any way this can be done before the end of May? Budget is flexible up to a point.\nHow did you hear about us? Instagram",
+    "notes_for_testing": "HARD DEADLINE (30 May 2026) plus a HIGH-VALUE cosmetic case above the CHF 3,000 threshold, so the booking needs human confirmation. Purely cosmetic work also sits on the VAT question flagged in pricing_note. Tests deadline feasibility reasoning against a staged treatment sequence, and tests that the automation does not promise a date the clinical sequence cannot hold."
+  },
+  {
+    "id": "DEN-010",
+    "channel": "email",
+    "received": "2026-03-17T23:41:00+01:00",
+    "from": "m.k.1978@example.ch",
+    "raw": "Betreff: Anfrage\n\nGuten Abend\n\nEs fällt mir schwer, diese Mail überhaupt zu schreiben. Ich war seit über zwölf Jahren nicht mehr beim Zahnarzt, weil ich als Kind eine sehr schlechte Erfahrung gemacht habe und seither panische Angst davor habe. Inzwischen schäme ich mich so sehr für meine Zähne, dass ich beim Sprechen die Hand vor den Mund halte. Zwei Zähne sind abgebrochen, hinten links kaue ich schon lange nicht mehr.\n\nIch weiss, dass es viel Arbeit sein wird und wahrscheinlich teuer. Was ich eigentlich wissen möchte: kann man zuerst einfach nur reden, ohne Behandlung, ohne dass mir jemand in den Mund schaut? Und wird das dann sehr teuer?\n\nBitte rufen Sie mich nicht an. Eine Antwort per Mail wäre mir viel lieber.\n\nM. Kuster",
+    "notes_for_testing": "GERMAN (the second of at least two). Anxious patient, long absence, explicit request not to be phoned, no phone number given, sent near midnight. The highest-value clinical case in the set arriving in the most fragile wrapper. Tests channel-preference compliance, and tests the follow-up cadence hard: the standard quote-chasing sequence from the trades pack would read as predatory here. Strong candidate for routing to a human before any automated reply is sent at all."
+  },
+  {
+    "id": "DEN-011",
+    "channel": "email",
+    "received": "2026-03-20T08:33:00+01:00",
+    "from": "a.zueger@example.ch",
+    "raw": "Subject: Chipped front tooth - ice hockey (accident insurance)\n\nMorning,\n\nMy son Luca (13) caught a stick in the face at training on Tuesday. We went to the emergency department that evening, they said nothing was broken and the tooth is still firmly in place, but the corner of the upper front tooth is chipped and he says it is sensitive to cold. He is fine otherwise, eating normally.\n\nThey told us to see a dentist within a week or so. This would go through the accident insurance rather than the health insurance I assume — do you need the case number from Suva before we come, or can we sort that afterwards?\n\nAndrea Züger\n071 555 0512, Flawil",
+    "notes_for_testing": "URGENT but deliberately NOT an emergency — the tooth is chipped, not avulsed or displaced, the trauma was already assessed at hospital three days ago, and the child is eating normally. The near-miss test: if the classifier escalates on the words 'accident', 'trauma' and 'front tooth' alone it produces a false emergency, which erodes trust in the escalation path that DEN-003 depends on. Also routes to a different tariff (accident insurance) than the private one, and involves a minor, so the consenting party is the parent."
+  },
+  {
+    "id": "DEN-012",
+    "channel": "phone-transcript",
+    "received": "2026-03-25T16:07:00+01:00",
+    "from": "071 555 0620",
+    "raw": "[Transcript, 3m02s] Caller: I've been told I need the bottom back teeth out on both sides and then implants, and honestly the number I was given nearly floored me. Reception: Do you remember roughly what was quoted? Caller: Somewhere over eleven thousand. That was in Wil. Reception: And have you had a full examination and x-rays there? Caller: Yes, I've got the panoramic and everything, they gave me a plan on paper. Reception: We would need to examine you ourselves before we could put a figure on it, but we can certainly look at the plan you have. Caller: That's fine, I'm not trying to get a price over the phone, I just want to know if there's another way of doing it. My sister had something removable that cost a fraction. Reception: And whereabouts are you? Caller: Uzwil, but I can travel, I'm retired.",
+    "notes_for_testing": "HIGH VALUE, well above the CHF 3,000 threshold, so the booking needs human confirmation. A second-opinion enquiry where the patient explicitly asks about a cheaper alternative treatment modality — a clinical judgement the automation must not make. Uzwil is at the western edge of the area and the patient volunteers that travel is no problem, so it should be accepted. Tests that the pipeline books a consultation and refuses to compare its own pricing against another practice's plan."
+  }
+]

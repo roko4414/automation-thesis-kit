@@ -1,0 +1,58 @@
+{
+  "slug": "advisory",
+  "label": "Tax & Treuhand Advisory",
+  "business": "a small tax and accounting advisory firm",
+  "region": "canton St. Gallen, Switzerland",
+  "currency": "CHF",
+  "vat_rate": 8.1,
+  "unit_of_work": "engagement",
+  "enquiry_word": "enquiry",
+  "visit_word": "scoping call",
+  "quote_word": "engagement letter",
+  "job_word": "mandate",
+  "job_types": [
+    "annual-financial-statements",
+    "corporate-tax-return",
+    "individual-tax-return",
+    "vat-return",
+    "monthly-bookkeeping",
+    "payroll-and-social-insurance",
+    "company-formation",
+    "limited-statutory-audit",
+    "tax-ruling-request",
+    "business-valuation",
+    "succession-and-sale",
+    "restructuring-advice"
+  ],
+  "service_area": {
+    "in": [
+      "St. Gallen",
+      "Gossau",
+      "Wittenbach",
+      "Goldach",
+      "Rorschach",
+      "Herisau",
+      "Flawil",
+      "Arbon"
+    ],
+    "out": [
+      "Geneva",
+      "Lugano",
+      "Sion",
+      "Lausanne"
+    ],
+    "note": "Distance is a weak qualifier here: almost all of this work is done remotely from documents, so a client in Zurich or Chur is no harder to serve than one in Wittenbach and must not be refused on geography. What actually qualifies an enquiry is client type and entity type (private individual, sole proprietor, GmbH/AG, association), whether the subject matter sits inside the firm's competence and licensing, and whether the firm is free of conflict to act."
+  },
+  "emergency_definition": "Genuinely time-critical means a statutory or authority-set clock is already running and missing it forfeits a right or triggers a penalty that cannot be undone by working faster later. Concretely: an objection period against a tax assessment that expires within days, a payment or filing demand from the cantonal tax office or the Federal Tax Administration with a stated deadline, a notice of audit or of an ex-officio (discretionary) assessment, a debt-collection or bankruptcy notice, or a VAT or payroll filing whose deadline falls before the next working week. These escalate to a qualified human immediately and are never answered by an automated reply alone, because the reply itself can be read as advice. Deadline periods here are illustrative and must be verified against the actual notice.",
+  "urgency_examples": {
+    "emergency": "We received a Veranlagungsverfügung from the Steueramt dated 9 March and our bookkeeper says we only have 30 days to object — that is next Tuesday. Can someone look at this today?",
+    "urgent": "Our VAT return for Q1 is due at the end of next month and the person who used to do it has left; we have no idea where to start.",
+    "scheduled": "We would like you to take over the annual financial statements and corporate tax return for our GmbH for the 2026 financial year, starting from the January books.",
+    "no_rush": "At some point this year my wife and I would like to talk through what happens to the business when I retire — nothing urgent, just want to start thinking about it."
+  },
+  "high_value_threshold_chf": 15000,
+  "threshold_note": "CHF 15,000 is roughly where an engagement stops being a recurring compliance mandate a manager can price from the standard packages and becomes a project with genuine scope risk — about ten to fifteen days of senior time — so a partner confirms the fee and the scope wording before it is sent.",
+  "compliance_note": "Before any fee is quoted the firm must run an independence and conflict-of-interest check against the existing client base (the counterparty in a dispute, the other shareholder, a competitor already advised) and, where it acts as a financial intermediary, complete client identification under the anti-money-laundering rules; for statutory audit work independence requirements under the Swiss Code of Obligations apply and are stricter still. The specific Swiss provisions and their scope are illustrative here and must be confirmed with the firm's compliance officer.",
+  "pricing_note": "Mixed. Recurring compliance work (bookkeeping, payroll, VAT, standard tax returns, small-company annual accounts) is sold as fixed fees or monthly retainers from a package list, while advisory, restructuring, valuation and anything with unknown record quality is billed hourly at seniority-based rates with an estimated range and a stated assumption about the state of the client's records. Fees are quoted excluding VAT at 8.1%, and disbursements such as commercial-register and authority fees are passed through.",
+  "what_makes_it_different": "There is no site visit and nothing can be measured: scope is discovered through conversation and by reading documents the client has not sent yet, so the automation is pricing something it cannot see, and the client's own description of the work is frequently wrong in the expensive direction. The engagement letter is not a sales document but a contract that fixes liability, scope and independence, so it cannot be auto-sent, and a conflict and AML check gates the workflow before pricing rather than after — a shape a trade contractor's process simply does not have. Confidentiality is also sharper: the enquiry text itself routinely contains third-party financial data and dispute detail, which constrains what can be logged, routed to a shared inbox, or passed to a model at all."
+}

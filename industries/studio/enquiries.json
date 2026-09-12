@@ -1,0 +1,98 @@
+[
+  {
+    "id": "STU-001",
+    "channel": "web-form",
+    "received": "2026-03-02T09:12:00+01:00",
+    "from": "l.hediger@example.ch",
+    "raw": "Name: Lea Hediger\nPhone: 071 555 0114\nDate of event: 15 August 2026\nLocation: Schloss Dottenwil, Wittenbach\nWhat are you looking for? Hi! We're getting married on 15 August next year, ceremony at 14:00 at the Schloss and the party goes until late. Roughly 90 guests. We'd want you from getting ready in the morning through to the first dance. We love the more documentary style stuff on your site, not so keen on the very posed group shots but I guess we need a few for the parents. Could you send us what a full day costs?",
+    "notes_for_testing": "Clean baseline. Complete, in area, well outside the lead time, datable. Should extract to a full-day wedding with no gaps. Style preference is a free-text taste signal that has no structured field to land in."
+  },
+  {
+    "id": "STU-002",
+    "channel": "email",
+    "received": "2026-03-03T08:41:00+01:00",
+    "from": "m.oberholzer@example-treuhand.ch",
+    "raw": "Betreff: Anfrage Mitarbeiterfotos / Website-Relaunch\n\nGuten Tag\n\nWir sind eine Treuhandfirma in Gossau mit 14 Mitarbeitenden und lassen unsere Website neu aufbauen. Wir bräuchten einheitliche Porträts von allen 14 Personen, dazu ein paar Aufnahmen vom Büro und vom Team im Sitzungszimmer.\n\nDie Agentur braucht die Bilder spätestens am 27. März, der Relaunch ist auf den 1. April terminiert. Ist das noch machbar? Ein Termin bei uns im Haus wäre uns am liebsten.\n\nFreundliche Grüsse\nM. Oberholzer",
+    "notes_for_testing": "GERMAN (one of at least two). Also carries a HARD DEADLINE - images needed by 27 March for a 1 April site launch, so the deadline is set by a third party the studio never speaks to. Tests German extraction plus deadline-versus-capacity reasoning."
+  },
+  {
+    "id": "STU-003",
+    "channel": "sms",
+    "received": "2026-03-04T21:58:00+01:00",
+    "from": "+41793310482",
+    "raw": "hey do u shoot cars. got a 964 im selling need some good pics. sat maybe",
+    "notes_for_testing": "SPARSE AND LOWERCASE. No name, no location, no budget, no clear date. Tests extraction from almost nothing and whether the bot asks two good questions instead of eight bad ones."
+  },
+  {
+    "id": "STU-004",
+    "channel": "email",
+    "received": "2026-03-05T14:07:00+01:00",
+    "from": "sales@example-kaffeeroesterei.ch",
+    "raw": "Subject: quick question - just a few photos\n\nHello,\n\nWe roast coffee here in St. Gallen and we've just finished a new range of six blends. We only need just a few photos of the bags, nothing fancy, plain white background is fine. Maybe two or three shots each?\n\nThey'll go on our webshop, and our distributor wants to use them too - they're putting us into Coop and Migros later this year so the packaging shots will be on shelf-talkers and probably in the Coop magazine. We're also running some Meta ads and there might be a poster at the Olma. Whatever's easiest for you.\n\nWhat would something like that cost? We were thinking a few hundred francs.\n\nThanks\nD. Sutter",
+    "notes_for_testing": "THE PRICING GATE CASE. Customer sincerely believes this is a small job and anchors at 'a few hundred francs', but retail, third-party distributor use, paid social and out-of-home at the Olma is a broad commercial licence worth several times the shooting fee. An automated quote priced on shoot hours would underquote by an order of magnitude and the studio would be bound by it. Argues hardest for an unconditional human gate before any number is sent."
+  },
+  {
+    "id": "STU-005",
+    "channel": "phone-transcript",
+    "received": "2026-03-17T18:33:00+01:00",
+    "from": "071 555 0263",
+    "raw": "[Transcript, 1m48s] Caller: Hi, sorry, I know this is a strange call - we're getting married on Saturday. This Saturday, the 21st. Our photographer messaged an hour ago, she's broken her wrist, she can't do it. Reception: Oh no. Where's the wedding? Caller: Civil ceremony at 11 at the Rathaus in St. Gallen then the meal at a restaurant in Teufen, about 40 people. It's small. Reception: And you'd need the whole day? Caller: Whatever we can get, honestly. Anything. I've called four people already. My partner is in bits. Reception: Let me get someone to call you straight back, don't wait on us, keep calling. Caller: Thank you.",
+    "notes_for_testing": "THE ONE GENUINELY TIME-CRITICAL CASE. Date-locked and four days away; the wedding cannot move. Must escalate to a human immediately - the only useful reply is a yes or no on the diary, and any autoresponder that says 'we'll be in touch within two working days' has already failed. Also tests that emotional distress does not by itself trigger escalation elsewhere."
+  },
+  {
+    "id": "STU-006",
+    "channel": "web-form",
+    "received": "2026-03-09T02:14:00+01:00",
+    "from": "",
+    "raw": "Name: \nPhone: \nEmail: \nWhat are you looking for? how much??",
+    "notes_for_testing": "THE JUNK / UNQUALIFIABLE CASE. No contact detail of any kind, no subject, submitted at 02:14. Cannot be replied to, cannot be qualified, cannot be chased. Tests that the pipeline closes it silently and does not burn a human review slot or emit a follow-up that has nowhere to go."
+  },
+  {
+    "id": "STU-007",
+    "channel": "email",
+    "received": "2026-03-11T10:26:00+01:00",
+    "from": "hochzeit.brunner.zimmermann@example.com",
+    "raw": "Betreff: Hochzeit im Wallis - reisen Sie auch?\n\nGuten Tag\n\nWir wohnen in St. Gallen, heiraten aber am 12. September 2026 in Zermatt. Trauung um 15 Uhr in der Kapelle, anschliessend Apéro und Abendessen im Hotel, ca. 60 Gäste. Am Morgen danach würden wir gerne noch ein paar Aufnahmen draussen am Berg machen.\n\nSie sind uns von Freunden empfohlen worden, deren Hochzeit Sie 2024 in Appenzell fotografiert haben. Uns ist bewusst, dass Zermatt weit weg ist - reisen Sie überhaupt so weit, und was würde das zusätzlich kosten? Zwei Übernachtungen müssten wir wohl ohnehin einrechnen.\n\nFreundliche Grüsse\nN. Brunner und S. Zimmermann",
+    "notes_for_testing": "THE OUT-OF-AREA CASE THAT MUST BE PRICED, NOT REFUSED. Zermatt is roughly 400km away and firmly outside any sensible service radius, but destination weddings are normal, welcome and profitable - the correct output is a proposal with a travel day, mileage and two nights' accommodation added, never a polite decline. This is the qualifier logic that diverges hardest from a trade business, where the same distance would be an instant no. Also GERMAN (the second one) and a REFERRAL from a past client, so it doubles as the referral-attribution test."
+  },
+  {
+    "id": "STU-008",
+    "channel": "email",
+    "received": "2026-03-12T16:05:00+01:00",
+    "from": "events@example-industrie.ch",
+    "raw": "Subject: Photographer for company anniversary - 15 August\n\nHi there,\n\nWe're marking our 50th anniversary with a customer event at our site in Arbon on Saturday 15 August 2026. Doors at 16:00, speeches, factory tours, dinner and a band, we expect around 250 guests including press.\n\nWe'd want photo coverage from 15:30 through to about 23:00 plus a short highlight film for LinkedIn. Budget is agreed internally and is not the issue. Our marketing lead saw your work at the Startfeld event.\n\nCan you confirm you're free that date? We need to lock the supplier list by end of March.\n\nBest,\nC. Kuster",
+    "notes_for_testing": "THE BOOKING CLASH. 15 August 2026 is already held by the wedding in STU-001, and this enquiry is larger, better funded and explicitly says budget is not the issue - and none of that matters, because the studio cannot be in Wittenbach and Arbon on the same evening. Tests that the availability check runs before any pricing or scoring, and that the pipeline can produce a referral-out or subcontract path rather than a quote. The one constraint no pricing intelligence can solve."
+  },
+  {
+    "id": "STU-009",
+    "channel": "email",
+    "received": "2026-03-15T20:49:00+01:00",
+    "from": "familie.gmuer@example.ch",
+    "raw": "Subject: Us again :)\n\nHi Tobias,\n\nYou photographed our wedding in Teufen back in 2022 and we still have the big print in the hallway. Baby number two arrived three weeks ago (Mattia, 3.4kg, very loud) and we'd love to do a newborn session like we did with Elin - same relaxed thing at home, no props, no headbands, nothing on a fur rug please.\n\nWe know it needs to happen soon before he uncurls. Any chance in the next fortnight or two? Weekday mornings are best for us.\n\nAlso our friends the Zimmermanns may have been in touch about Zermatt, we sent them your way.\n\nLea and Robin",
+    "notes_for_testing": "REPEAT CUSTOMER. Existing record should be matched on email or name and the previous job history pulled through - re-asking a returning client for their address is a visible automation failure. Also the source of the STU-007 referral, so the two records test cross-linking. Soft-urgent: newborn sessions have a real biological window but nothing here needs escalation."
+  },
+  {
+    "id": "STU-010",
+    "channel": "sms",
+    "received": "2026-03-19T12:31:00+01:00",
+    "from": "+41794450917",
+    "raw": "Good afternoon, this is Pia Zellweger. My husband turns 70 in November and I would like to organise a photo of the whole family, we are 19 including the grandchildren. Probably outdoors somewhere nice near Rorschach if the weather holds. It is a long way off, I know, I just wanted to ask early. Thank you.",
+    "notes_for_testing": "NO RUSH baseline. Eight months out, low value, polite, complete enough. Tests that the follow-up cadence stretches instead of nagging fortnightly, and that a small job does not get the same sequence as a wedding."
+  },
+  {
+    "id": "STU-011",
+    "channel": "phone-transcript",
+    "received": "2026-03-23T11:15:00+01:00",
+    "from": "071 555 0377",
+    "raw": "[Transcript, 3m02s] Caller: Morning, I'm with an architecture practice in Flawil, we've just completed a house up above Teufen and we want it photographed properly for our portfolio and for a competition entry. Reception: What sort of thing did you have in mind? Caller: Interiors and exteriors, we'd want to be there directing, and we'd want it shot in good light so probably two visits, one late afternoon one morning. The client still lives there so it needs to be tidied and staged, we'll handle that. Reception: Do you need it by a particular date? Caller: The competition closes 30 June. Reception: And how would the images be used? Caller: Portfolio, our website, the competition submission, and the architecture press if we place it - Hochparterre hopefully. Reception: OK, I'll have Tobias call you, he'll want to see it before quoting.",
+    "notes_for_testing": "The recce case. Two visits at specific light windows, client present and directing, staging dependency owned by someone else, plus onward press licensing. Cannot be priced from the enquiry text alone - proves the visit/recce step exists for a reason in this industry even though nothing is being inspected for faults."
+  },
+  {
+    "id": "STU-012",
+    "channel": "web-form",
+    "received": "2026-03-26T17:44:00+01:00",
+    "from": "procurement@example-medtech.ch",
+    "raw": "Name: R. Frei\nPhone: 071 555 0490\nCompany: (medtech, St. Gallen)\nWhat are you looking for? We are tendering for a brand film plus a stills library. Scope: 2 shooting days at our facility in St. Gallen, 1 day at a partner clinic near Zurich, cleanroom access with gowning, interviews with 4 people in German and English, plus approx. 60 stills for web, sales decks and the trade fair stand at MEDICA. Deliverables: one 90-second film, three 30-second cutdowns, subtitles in DE/EN/FR, stills retouched. Usage: worldwide, all media, 3 years. Please quote. We are approaching three suppliers and will decide by 30 April.",
+    "notes_for_testing": "HIGH VALUE, well above the CHF 2,500 threshold - three shooting days, multilingual deliverables and a worldwide three-year all-media licence, likely a five-figure proposal. Fully structured and unusually complete, which is exactly the trap: it looks machine-quotable but the licence term alone can swing the total more than the entire production. Also a competitive tender, so a slow human gate has a real commercial cost - the tension the thesis is measuring."
+  }
+]

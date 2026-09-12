@@ -1,14 +1,14 @@
 {
-  "name": "W4 \u00b7 Quote follow-up",
+  "name": "W4 \u00b7 Follow-up \u2014 Photo & video studio",
   "nodes": [
     {
       "parameters": {
-        "content": "## W4 \u2014 Quote follow-up\n\n**Boundary: automated, with a hard stop the moment a human replies.**\nLow consequence per message, but the failure mode is reputational and compounding, so the stop condition is absolute rather than probabilistic. Scored 2/3/5.\n\n### Three touches. Ever.\nDay 3, day 7, day 14, then the job escalates to the owner and the sequence ends. A fourth automated message is not follow-up, it is harassment \u2014 and in a town this size the business cannot afford it.\n\n### Confound warning\nWin rate will move and you will want to claim it. Don't. At n\u224825 you cannot separate the sequence from market conditions. Report **touches delivered vs intended** \u2014 that one is clean, and it is the thing the automation actually changed.",
+        "content": "## W4 \u2014 Follow-up \u00b7 Photo & video studio\n\n**Boundary: automated, with a hard stop the moment a human replies.**\nLow consequence per message, but the failure mode is reputational and compounding, so the stop condition is absolute rather than probabilistic. Scored 2/3/5.\n\n### Three touches. Ever.\nDay 3, day 7, day 14, then it escalates to the owner and the sequence ends. A fourth automated message is not follow-up, it is harassment \u2014 and in a town this size the business cannot afford it.\n\n### Confound warning\nWin rate will move and you will want to claim it. Don't. At n\u224825 you cannot separate the sequence from market conditions. Report **touches delivered vs intended** \u2014 that one is clean, and it is the thing the automation actually changed.",
         "width": 500,
         "height": 440,
         "color": 5
       },
-      "id": "b4b03985-6a85-45c8-a424-b67c36b2f2f6",
+      "id": "3aca3d4f-c639-4e08-87a1-a506d7eee3c4",
       "name": "Note 1",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
@@ -28,7 +28,7 @@
           ]
         }
       },
-      "id": "f547ca41-c270-4f2d-a90d-6fe5d3b28781",
+      "id": "a68555ba-98a9-4d5b-848d-c5b0ec9133e9",
       "name": "Daily 08:00",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
@@ -60,8 +60,8 @@
         "combineFilters": "AND",
         "options": {}
       },
-      "id": "73acae3f-03a3-49e0-87e5-ff2b22ba90e7",
-      "name": "Get open quotes",
+      "id": "fecd7823-1f32-42ef-9bce-18c053b93083",
+      "name": "Get open proposals",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
       "position": [
@@ -73,7 +73,7 @@
       "parameters": {
         "jsCode": "const SCHEDULE_DAYS = { 1: 3, 2: 7, 3: 14 };\nconst MAX_TOUCHES = 3;\nconst now = Date.now();\nconst out = [];\n\nfor (const item of items) {\n  const q = item.json;\n  if (!q.job_id || !q.sent_at) continue;\n\n  const daysSince = Math.floor((now - new Date(q.sent_at).getTime()) / 86400000);\n  const sent = Number(q.touches_sent ?? 0);\n  const next = sent + 1;\n\n  // The absolute stop. Checked before anything else, and again in the IF node after\n  // this one, because a duplicated guard is cheap and a message sent over the top of a\n  // live conversation is not recoverable.\n  const humanReplied = String(q.inbound_since_sent ?? '').trim().length > 0;\n\n  if (humanReplied) {\n    out.push({ json: { ...q, send: false, stopped_reason: 'human_reply', touch_number: next } });\n    continue;\n  }\n  if (next > MAX_TOUCHES) {\n    out.push({ json: { ...q, send: false, stopped_reason: 'escalated', touch_number: next } });\n    continue;\n  }\n  if (daysSince < SCHEDULE_DAYS[next]) continue;  // not due yet, say nothing\n\n  out.push({\n    json: {\n      ...q, send: true, touch_number: next, days_since_sent: daysSince,\n      stance: next === 1 ? 'assume it was missed, no ask beyond did this arrive'\n            : next === 2 ? 'offer to answer questions or adjust scope, name the total'\n            : 'close it out, ask for a yes or a no, say the quote expires, thank them either way',\n    },\n  });\n}\nreturn out;"
       },
-      "id": "3c44fc7b-f3e0-43d6-be63-f78ec885b668",
+      "id": "278cb982-8ff4-4d30-bb10-a52c7590e8ac",
       "name": "Which touch is due",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -94,7 +94,7 @@
           "combinator": "and",
           "conditions": [
             {
-              "id": "08c593b8-a75a-4506-be47-50b77ebd691b",
+              "id": "4a98d897-79cb-48c4-be5a-24a1d0f2aadc",
               "operator": {
                 "type": "boolean",
                 "operation": "true",
@@ -108,7 +108,7 @@
         "looseTypeValidation": true,
         "options": {}
       },
-      "id": "bdf77d87-6418-4549-a764-b26908279a21",
+      "id": "7107980c-25c6-40cb-8474-06b1df7334d3",
       "name": "Safe to send?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -120,17 +120,17 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "=Write follow-up touch {{ $json.touch_number }}.\n\nLanguage: {{ $json.language }}\nCustomer: {{ $json.customer_name }}\nJob: {{ $json.described_scope }}\nQuote total: CHF {{ $json.total_chf }}\nSent: {{ $json.sent_at }} ({{ $json.days_since_sent }} days ago)\nStance for this touch: {{ $json.stance }}",
+        "text": "=Write follow-up touch {{ $json.touch_number }}.\n\nLanguage: {{ $json.language }}\nCustomer: {{ $json.customer_name }}\nJob: {{ $json.described_scope }}\nProposal total: CHF {{ $json.total_chf }}\nSent: {{ $json.sent_at }} ({{ $json.days_since_sent }} days ago)\nStance for this touch: {{ $json.stance }}",
         "messages": {
           "messageValues": [
             {
-              "message": "You write short follow-up messages chasing an unanswered quote for a small electrical contractor in canton St. Gallen.\n\nWrite in the customer's language. German uses Sie.\n\nNo pressure tactics: no fake scarcity, no invented deadlines, no last chance. A small contractor's reputation in a town this size is the entire business.\n\nMake declining easy and explicit \u2014 every message offers a one-line way out. The goal is a decision, not a yes.\n\nUnder 80 words. Plain text, no markdown. No subject line for touches 2 and 3; they thread onto the original."
+              "message": "You write short follow-up messages chasing an unanswered proposal for a small photography and video studio in canton St. Gallen, Switzerland.\n\nWrite in the customer's language. German uses Sie.\n\nNo pressure tactics: no fake scarcity, no invented deadlines, no last chance. A small contractor's reputation in a town this size is the entire business.\n\nMake declining easy and explicit \u2014 every message offers a one-line way out. The goal is a decision, not a yes.\n\nUnder 80 words. Plain text, no markdown. No subject line for touches 2 and 3; they thread onto the original."
             }
           ]
         },
         "batching": {}
       },
-      "id": "63e5d268-447d-48bf-99f0-0ca7c1d97f91",
+      "id": "78921dc7-1cd0-499b-8b87-38e46675c58c",
       "name": "Compose the nudge",
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.7,
@@ -151,7 +151,7 @@
           "maxTokensToSample": 512
         }
       },
-      "id": "51a5eec5-4f41-4663-a14e-fecba393d462",
+      "id": "3ff4dfe3-57d5-43ab-a14d-94c184897cee",
       "name": "Claude \u2014 follow-up",
       "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
       "typeVersion": 1.3,
@@ -165,12 +165,12 @@
         "operation": "send",
         "fromEmail": "workflow@example.ch",
         "toEmail": "={{ $('Which touch is due').item.json.email }}",
-        "subject": "=Re: your quote \u2014 {{ $('Which touch is due').item.json.job_id }}",
+        "subject": "=Re: your proposal \u2014 {{ $('Which touch is due').item.json.job_id }}",
         "emailFormat": "text",
         "text": "={{ $json.text }}",
         "options": {}
       },
-      "id": "bd78f893-0bb2-4c95-be37-7eb75b3449b9",
+      "id": "efd11e5e-177e-406b-a541-2da7e6d3ad40",
       "name": "Send follow-up",
       "type": "n8n-nodes-base.emailSend",
       "typeVersion": 2.1,
@@ -254,7 +254,7 @@
         },
         "options": {}
       },
-      "id": "b5323193-ff44-4209-a666-eb2c95f5e0d9",
+      "id": "c36c8b6e-047d-417b-94d5-e028f2ca46d7",
       "name": "Log the stop",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
@@ -338,7 +338,7 @@
         },
         "options": {}
       },
-      "id": "bb8b666e-6d3f-476b-a727-1083c7e7f0d6",
+      "id": "7a706fad-ddae-49ec-ac50-af2734faa32b",
       "name": "Log the touch",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
@@ -364,14 +364,14 @@
       "main": [
         [
           {
-            "node": "Get open quotes",
+            "node": "Get open proposals",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Get open quotes": {
+    "Get open proposals": {
       "main": [
         [
           {

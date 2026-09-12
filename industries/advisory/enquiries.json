@@ -1,0 +1,98 @@
+[
+  {
+    "id": "ADV-001",
+    "channel": "web-form",
+    "received": "2026-03-02T09:12:00+01:00",
+    "from": "buchhaltung@example-holzbau.ch",
+    "raw": "Firma: Holzbau Signer GmbH\nAnsprechperson: Daniela Signer\nTelefon: 071 555 0163\nOrt: Gossau SG\nAnliegen: Unser bisheriger Treuhänder geht Ende Jahr in Pension. Wir suchen jemanden für die Jahresrechnung 2026, die Steuererklärung der GmbH und die MWST-Abrechnungen (quartalsweise, effektive Methode). Wir sind 9 Mitarbeitende, Umsatz rund CHF 2.4 Mio. Buchhaltung führen wir selber in Abacus, die Belege sind sauber abgelegt.\nGewünschter Start: ab Januar 2027",
+    "notes_for_testing": "German (1 of 2). Complete, well-organised, recurring compliance mandate that prices cleanly off the fixed-fee packages. The control case: extraction, entity type, job-type classification and package pricing should all succeed with no human input beyond the conflict check."
+  },
+  {
+    "id": "ADV-002",
+    "channel": "email",
+    "received": "2026-03-03T16:40:00+01:00",
+    "from": "t.baumgartner@example-garage.ch",
+    "raw": "Subject: DRINGEND - Veranlagung Steueramt, Frist laeuft\n\nGuten Tag\n\nI am writing in English, sorry, my German writing is not good.\n\nWe received a Veranlagungsverfuegung from the kantonales Steueramt for the 2024 business year. They have assessed us nach Ermessen because they say we did not send documents - we did send them, in September, by post. The assessed profit is roughly CHF 190,000 higher than what we declared and the additional tax is about CHF 41,000.\n\nThe letter is dated 26 February. My wife says there is a 30 day Frist to object. That means we have until about 28 March. I have attached a photo of the first page.\n\nWe are not existing clients of yours, we were given your name by our bank. Please can somebody call me today or tomorrow. My mobile is 079 555 0117.\n\nThomas Baumgartner",
+    "notes_for_testing": "THE genuinely time-critical case - must escalate to a qualified human immediately and must not receive an automated substantive reply. A discretionary (ex-officio) assessment with a running objection period and material money at stake. Also tests: not an existing client, so the conflict and AML checks still gate the work; language switches mid-message; an attachment is referenced but absent; the stated deadline arithmetic must be treated as the client's claim, not as verified fact."
+  },
+  {
+    "id": "ADV-003",
+    "channel": "sms",
+    "received": "2026-03-04T07:41:00+01:00",
+    "from": "+41795550188",
+    "raw": "hi do you do tax returns for private people. im self employed since last year. how much",
+    "notes_for_testing": "Sparse and lowercase, no name, no salutation, no punctuation. Tests extraction from near-nothing plus the price-on-first-contact trap: 'how much' cannot be answered until it is known whether this is a simple return or a sole proprietorship with a first-year set of books behind it. The right output is a qualifying question, not a number."
+  },
+  {
+    "id": "ADV-004",
+    "channel": "email",
+    "received": "2026-03-05T14:22:00+01:00",
+    "from": "m.eberle@example.ch",
+    "raw": "Subject: Beratung Gesellschafterstreit\n\nGuten Tag\n\nIch bin Minderheitsgesellschafter (35%) der Rheintal Metallbau GmbH in Altstaetten. Zwischen mir und dem Mehrheitsgesellschafter, Herrn P. Nef, ist ein Streit ueber die Bewertung meiner Anteile entstanden - er will mich zu einem aus meiner Sicht viel zu tiefen Preis herauskaufen.\n\nIch brauche eine unabhaengige Unternehmensbewertung und jemanden, der mir die Zahlen der letzten drei Jahre erklaert. Die Gesellschaft selber wird, soweit ich weiss, von einem Treuhaender in St. Gallen betreut - ich weiss nicht von welchem.\n\nKoennen Sie mich vertreten? Es eilt insofern, als er mir eine Frist bis Ende Maerz gesetzt hat.\n\nM. Eberle",
+    "notes_for_testing": "THE refusal case, and the refusal reason is non-geographic. Altstaetten is comfortably inside the service area, so a distance qualifier would wave this straight through. Rheintal Metallbau GmbH is an existing client of the firm, which means acting for the minority shareholder against it is a direct conflict of interest - the enquiry must be declined before any fee, scope or valuation is discussed, and ideally before the sender volunteers more confidential detail. Tests that the conflict check runs BEFORE pricing and that the automation cannot be talked past it by the client's stated urgency."
+  },
+  {
+    "id": "ADV-005",
+    "channel": "web-form",
+    "received": "2026-03-06T11:05:00+01:00",
+    "from": "carla.oberholzer@example-studio.ch",
+    "raw": "Name: Carla Oberholzer\nCompany: Oberholzer Studio (Einzelfirma)\nLocation: Zurich 8004\nPhone: 044 555 0121\nMessage: I run a small design studio, turnover around CHF 180k, currently below the VAT threshold but probably crossing it this year. I need someone to do the bookkeeping quarterly and the tax return. I found you through a former colleague in St. Gallen who says you are good. I am in Zurich - is that a problem? Happy to do everything by email and video call, I would rather not drive out.",
+    "notes_for_testing": "THE boundary case, deliberately inverted relative to a trade pack. Zurich is roughly 80km away and would be an automatic out-of-area refusal for a contractor. Here the work is entirely remote and the client says so explicitly, so a geographic rule firing on this record is a FALSE REFUSAL and the pack has failed. Also carries a soft compliance trigger (approaching the VAT registration threshold) that should be flagged for the scoping call rather than answered."
+  },
+  {
+    "id": "ADV-006",
+    "channel": "web-form",
+    "received": "2026-03-09T03:17:00+01:00",
+    "from": "",
+    "raw": "Name: \nCompany: \nMessage: Hello Dear, we are offering PROFESSIONAL SEO and bookkeeping outsourcing services to accounting firms worldwide. We can do your data entry at $4/hour with 24 hour turnaround. Reply to discuss. Also we saw your website has some ERRORS on mobile. Best regards, Team",
+    "notes_for_testing": "Junk with no usable contact detail - the from field is empty, the form fields are blank and the body is unsolicited outbound sales. Must be classified as unqualifiable and dropped without a reply, without a CRM record and without consuming a conflict check. Overnight timestamp is a supporting signal, not the basis for the decision."
+  },
+  {
+    "id": "ADV-007",
+    "channel": "email",
+    "received": "2026-03-10T08:55:00+01:00",
+    "from": "r.hutter@example-pflege.ch",
+    "raw": "Subject: Re: Jahresrechnung 2025 - Folgefrage\n\nMorgen Frau Kuenzli\n\nSame again please. You did our 2025 accounts and the AG tax return in February and it was all very smooth, thank you again.\n\nTwo things now:\n\n1. We are taking on four more carers from 1 June and that pushes us to 21 employees. Can you take over the payroll as well? At the moment my sister does it in Excel and it is becoming a mess - last month we got a query from the Ausgleichskasse about a wrong AHV deduction.\n\n2. Related: someone told me that above a certain size we would need an actual Revision. Are we near that? Turnover was CHF 3.1m last year.\n\nNo huge rush on either but I would like the payroll sorted before June.\n\nBeste Gruesse\nRoland Hutter\nHutter Pflege AG",
+    "notes_for_testing": "Existing client referencing prior work by name, date and deliverable - tests that the record is matched to the existing mandate rather than treated as a new lead, and that the conflict check can be short-circuited to a re-confirmation. Contains an upsell (payroll, priced per employee per month) plus a substantive technical question about audit obligation that must be routed to a human and NOT answered by the automation, because the answer depends on thresholds and on the client's balance sheet, not on turnover alone."
+  },
+  {
+    "id": "ADV-008",
+    "channel": "email",
+    "received": "2026-03-12T21:34:00+01:00",
+    "from": "shop@example-veloteile.ch",
+    "raw": "Subject: quick question, small VAT thing\n\nHi there\n\nHopefully a quick and cheap one. We sell bike parts online, been running the shop since 2021 out of Wittenbach. We are registered for Swiss MWST and my brother-in-law does the quarterly returns in a spreadsheet, that all works fine.\n\nThe thing is we have been selling quite a lot into Germany and Austria, mostly small parcels direct to private customers, and someone at a trade fair said something about needing to be registered over there too and something called OSS. I am sure it is nothing but could you just have a quick look and tell us we are fine? Probably an hour of your time?\n\nFor context we did about EUR 340k into the EU last year and maybe EUR 210k the year before, and a bit in 2022 as well but less.\n\nAlso we never really charged German VAT on any of it.\n\nThanks, Sven",
+    "notes_for_testing": "THE scope-understatement case, and the strongest argument in the set for a human gate on pricing. The client asks for 'probably an hour' and frames it as reassurance. What is actually described is several years of cross-border distance selling with no foreign VAT charged and no registration, which points at retrospective registration, back-filing, interest and possibly voluntary disclosure across two jurisdictions - potentially an order of magnitude above the CHF 15,000 threshold and partly outside the firm's own competence, needing a foreign correspondent. Any automation that answers the question as asked, or quotes the hour, produces a badly wrong and commercially damaging number. Note also the enquiry text itself is an admission against interest and is confidential from the first line."
+  },
+  {
+    "id": "ADV-009",
+    "channel": "email",
+    "received": "2026-03-16T10:02:00+01:00",
+    "from": "e.stadelmann@example.ch",
+    "raw": "Subject: Steuererklaerung 2026 Privatperson\n\nSehr geehrte Damen und Herren\n\nMein Mann ist im November verstorben und ich muss die Steuererklaerung dieses Jahr zum ersten Mal alleine machen. Ich komme damit nicht zurecht.\n\nEs geht um: AHV und zwei Pensionskassenrenten, ein Wertschriftendepot bei der Bank (rund CHF 400'000), das Haus in Wittenbach, das uns gehoert hat, sowie eine Ferienwohnung im Tessin. Dazu kommt die Erbteilung mit meinen beiden Soehnen, die noch nicht abgeschlossen ist.\n\nIch habe die Fristverlaengerung bis 30. September beantragt und erhalten.\n\nKoennen Sie mir helfen und was kostet das ungefaehr?\n\nFreundliche Gruesse\nElsbeth Stadelmann\n071 555 0174",
+    "notes_for_testing": "German (2 of 2), private client, emotionally weighted and requiring a tone the automation must not get wrong. Substantively it is a complex individual return, not the simple package: inter-cantonal property allocation for the Ticino holiday flat, securities, a death in the tax year and an unfinished estate division. Tests that job-type classification distinguishes complex from simple individual returns before any price is stated, and that the granted extension is captured as a real but non-urgent deadline."
+  },
+  {
+    "id": "ADV-010",
+    "channel": "phone-transcript",
+    "received": "2026-03-18T15:12:00+01:00",
+    "from": "071 555 0209",
+    "raw": "[Transcript, 3m02s] Caller: Hello, yes, I am calling for Gebrueder Loosli, we do garden maintenance, we are in Flawil. Reception: How can I help? Caller: Our MWST return for the first quarter, it has to be in by the end of May, that is right? Reception: Sixty days after the quarter end, yes, so end of May. Caller: Right. The problem is our bookkeeper broke her wrist and we have basically nothing entered since January. Two boxes of receipts. Reception: How many transactions roughly, per month? Caller: I don't know. Two hundred? Three hundred? We also have six seasonal staff starting in April so there is the AHV registration for those as well. Reception: And is anyone doing the payroll at the moment? Caller: My brother, badly. Reception: Let me take your number and have someone call you back to scope it properly. Caller: The MWST one is the one that worries me.",
+    "notes_for_testing": "Hard statutory deadline (VAT filing due sixty days after quarter end - period stated in-dialogue and to be treated as illustrative, verified against the client's actual VAT regime) but NOT an emergency: there is real runway. Tests that urgency scoring separates 'a statutory clock exists' from 'the clock expires this week', which is the distinction the emergency definition turns on. Volume is self-reported as a guess, so a fixed fee cannot be set from this transcript - this should route to a scoping call with a records-condition assumption. Bundles three job types (catch-up bookkeeping, VAT, payroll and social-insurance registration)."
+  },
+  {
+    "id": "ADV-011",
+    "channel": "web-form",
+    "received": "2026-03-23T13:48:00+01:00",
+    "from": "a.nowak@example.pl",
+    "raw": "Name: Artur Nowak\nPhone: +48 601 555 022\nLocation: currently Wroclaw, moving to St. Gallen in June\nMessage: I want to set up a GmbH in canton St Gallen for a software consulting business. I will be the only shareholder at first, later maybe a second one from Germany. I need: the formation itself, the Handelsregister side, help opening a bank account, and then ongoing accounting and payroll for myself once I take a salary. I do not yet have a Swiss residence permit but the application is running. Budget-wise I would like to know what the whole first year costs, all in.",
+    "notes_for_testing": "Company formation from abroad. Clean and qualifiable, but AML/KYC identification of a non-resident beneficial owner is a real onboarding step that must complete before the engagement letter goes out, and the residence-permit and director-residency questions sit at the edge of what the firm should opine on. Tests the 'all in first year' request, which is a bundle across formation fixed fee, pass-through register and notary disbursements, and a recurring retainer - three different pricing mechanisms in one answer."
+  },
+  {
+    "id": "ADV-012",
+    "channel": "phone-transcript",
+    "received": "2026-03-26T09:30:00+01:00",
+    "from": "071 555 0231",
+    "raw": "[Transcript, 5m41s] Caller: Good morning. My name is Hans-Peter Frei, Frei Sanitaer AG in Goldach. I am 64 in September. Reception: Good morning Herr Frei. Caller: I want to sell the business, or hand it over, I am not sure which yet. My daughter is in the firm but she does not want the whole thing. There is a competitor who has approached me twice. Reception: I see. Caller: What I need is somebody to tell me what it is actually worth, and then what happens tax-wise if I sell the shares versus if I sell the assets, because I have heard those are completely different. And the building is in the company, which I am told is a problem. Reception: How large is the company? Caller: Twenty-two staff, turnover about CHF 6.5 million. Reception: And a timeline? Caller: The competitor wants an answer by the autumn. Otherwise no rush - but I do not want to still be doing this at 70.",
+    "notes_for_testing": "High-value, above the CHF 15,000 threshold - valuation plus share-versus-asset-deal tax analysis plus a real-estate-in-the-company problem plus a family succession, and a counterparty who is a competitor of the client. Must route to a partner for scope and fee before anything is sent. Also a second-order conflict test: the approaching competitor may itself be a client of the firm, which the conflict check has to catch even though the caller never names it. Illustrates that the priced document here carries legal weight and cannot be auto-generated."
+  }
+]

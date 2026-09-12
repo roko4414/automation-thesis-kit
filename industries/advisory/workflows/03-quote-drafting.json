@@ -1,14 +1,14 @@
 {
-  "name": "W3 \u00b7 Quote drafting",
+  "name": "W3 \u00b7 Engagement letter drafting \u2014 Tax & Treuhand Advisory",
   "nodes": [
     {
       "parameters": {
-        "content": "## W3 \u2014 Quote drafting\n\n**Boundary decision: draft-and-review, unconditional.**\nVariance high (every job differs), consequence high (a wrong price is money out of the owner's pocket), and a sent quote cannot be withdrawn. Scored 5/5/3.\n\nThe system assembles. The owner decides. There is no value threshold below which this gate is skipped \u2014 a cheap job quoted wrong still costs trust.\n\n### Why this workflow is the thesis\nEverything measurable and interesting is here: what the model gets right, what it gets wrong, how long review takes against writing from scratch, and whether review time falls as the owner learns where to trust it.\n\nIf you instrument nothing else properly, instrument this.",
+        "content": "## W3 \u2014 Engagement letter drafting \u00b7 Tax & Treuhand Advisory\n\n**Boundary decision: draft-and-review, unconditional.**\nVariance high (every engagement differs), consequence high (a wrong price is money out of the owner's pocket), and a sent engagement letter cannot be withdrawn. Scored 5/5/3.\n\nThe system assembles. The owner decides. There is no value threshold below which this gate is skipped \u2014 a cheap engagement priced wrong still costs trust.\n\n### Why this workflow is the thesis\nEverything measurable and interesting is here: what the model gets right, what it gets wrong, how long review takes against writing from scratch, and whether review time falls as the owner learns where to trust it.\n\nIf you instrument nothing else properly, instrument this.",
         "width": 540,
         "height": 520,
         "color": 5
       },
-      "id": "bb4c8639-8cb7-43a0-973a-dbad3ce62273",
+      "id": "733b9b8b-1b27-4782-a9ce-6fb1e7b4bf28",
       "name": "Note 1",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
@@ -24,15 +24,15 @@
         "responseMode": "lastNode",
         "options": {}
       },
-      "id": "75a202ec-8bbd-4aad-b175-2e57add38f92",
-      "name": "Site visit complete",
+      "id": "3445667c-801c-4c8f-b4e7-bfa35f302ef0",
+      "name": "Scoping call complete",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
       "position": [
         -300,
         -140
       ],
-      "webhookId": "0ada228a-3bea-4265-9930-f947f3b77ee0"
+      "webhookId": "1881826e-925a-4385-b0ad-32b43aa6d832"
     },
     {
       "parameters": {
@@ -44,12 +44,12 @@
         "sheetName": {
           "__rl": true,
           "mode": "name",
-          "value": "rate_card"
+          "value": "price_list"
         },
         "options": {}
       },
-      "id": "8bff7531-6d54-49a9-b6ef-3dd22a5f722d",
-      "name": "Load rate card",
+      "id": "2d55238b-8c3f-4263-82e4-2b6611f63150",
+      "name": "Load price list",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
       "position": [
@@ -71,8 +71,8 @@
         },
         "options": {}
       },
-      "id": "2c7bdfe2-d58c-4034-bf68-d712e4f08d86",
-      "name": "Load past jobs",
+      "id": "c5c6008c-51f8-4cb4-bab1-c972417ce4eb",
+      "name": "Load past work",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
       "position": [
@@ -82,9 +82,9 @@
     },
     {
       "parameters": {
-        "jsCode": "// Retrieval is deliberately crude: keyword overlap on job_type and scope text.\n//\n// That is a choice worth defending in the thesis rather than apologising for. A vector\n// store would retrieve better, but 25 historical jobs is not a retrieval problem \u2014 it is\n// a lookup. Adding embeddings here would add a dependency, a cost line and a failure\n// mode in exchange for nothing measurable at this scale. If your business has 5,000 past\n// jobs, revisit it, and say so in the limitations.\nconst visit = $('Site visit complete').first().json.body ?? $('Site visit complete').first().json;\nconst rateCard = $('Load rate card').all().map(i => i.json);\nconst past     = $('Load past jobs').all().map(i => i.json);\n\nconst stop = new Set(['the','and','for','with','new','all','job','from','into','out','per']);\nconst tokens = (s) => String(s ?? '').toLowerCase().match(/[a-z\u00e0-\u00ff]{3,}/g)?.filter(t => !stop.has(t)) ?? [];\n\nconst wanted = new Set([...tokens(visit.job_type), ...tokens(visit.visit_notes)]);\n\nconst scored = past.map(j => {\n  const have = new Set([...tokens(j.job_type), ...tokens(j.scope_text)]);\n  let overlap = 0;\n  for (const t of wanted) if (have.has(t)) overlap++;\n  const typeMatch = (j.job_type ?? '') === (visit.job_type ?? '') ? 3 : 0;\n  return { job: j, score: overlap + typeMatch };\n}).filter(x => x.score > 0)\n  .sort((a, b) => b.score - a.score)\n  .slice(0, 3);\n\nreturn [{\n  json: {\n    job_id: visit.job_id,\n    visit_notes: visit.visit_notes ?? '',\n    job_type: visit.job_type ?? null,\n    locality: visit.locality ?? null,\n    language: visit.language ?? 'de',\n    rate_card_csv: [Object.keys(rateCard[0] ?? {}).join(',')]\n      .concat(rateCard.map(r => Object.values(r).join(','))).join('\\n'),\n    similar_jobs: scored.map(s => s.job),\n    similar_scores: scored.map(s => s.score),\n    retrieval_method: 'keyword-overlap-v1',\n  },\n}];"
+        "jsCode": "// Retrieval is deliberately crude: keyword overlap on job_type and scope text.\n//\n// That is a choice worth defending in the thesis rather than apologising for. A vector\n// store would retrieve better, but 25 historical jobs is not a retrieval problem \u2014 it is\n// a lookup. Adding embeddings here would add a dependency, a cost line and a failure\n// mode in exchange for nothing measurable at this scale. If your business has 5,000 past\n// jobs, revisit it, and say so in the limitations.\nconst visit = $('Scoping call complete').first().json.body ?? $('Scoping call complete').first().json;\nconst rateCard = $('Load price list').all().map(i => i.json);\nconst past     = $('Load past work').all().map(i => i.json);\n\nconst stop = new Set(['the','and','for','with','new','all','job','from','into','out','per']);\nconst tokens = (s) => String(s ?? '').toLowerCase().match(/[a-z\u00e0-\u00ff]{3,}/g)?.filter(t => !stop.has(t)) ?? [];\n\nconst wanted = new Set([...tokens(visit.job_type), ...tokens(visit.visit_notes)]);\n\nconst scored = past.map(j => {\n  const have = new Set([...tokens(j.job_type), ...tokens(j.scope_text)]);\n  let overlap = 0;\n  for (const t of wanted) if (have.has(t)) overlap++;\n  const typeMatch = (j.job_type ?? '') === (visit.job_type ?? '') ? 3 : 0;\n  return { job: j, score: overlap + typeMatch };\n}).filter(x => x.score > 0)\n  .sort((a, b) => b.score - a.score)\n  .slice(0, 3);\n\nreturn [{\n  json: {\n    job_id: visit.job_id,\n    visit_notes: visit.visit_notes ?? '',\n    job_type: visit.job_type ?? null,\n    locality: visit.locality ?? null,\n    language: visit.language ?? 'de',\n    rate_card_csv: [Object.keys(rateCard[0] ?? {}).join(',')]\n      .concat(rateCard.map(r => Object.values(r).join(','))).join('\\n'),\n    similar_jobs: scored.map(s => s.job),\n    similar_scores: scored.map(s => s.score),\n    retrieval_method: 'keyword-overlap-v1',\n  },\n}];"
       },
-      "id": "ddaf1baa-326a-47fb-a3af-42692a13bb6f",
+      "id": "fc525834-0c59-49f4-8583-c51e15adb4bb",
       "name": "Build pricing context",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -96,18 +96,18 @@
     {
       "parameters": {
         "promptType": "define",
-        "text": "=Draft a quote from this site visit.\n\nJOB TYPE: {{ $json.job_type }}\nLOCALITY: {{ $json.locality }}\n\nVISIT NOTES:\n{{ $json.visit_notes }}\n\nRATE CARD (csv):\n{{ $json.rate_card_csv }}\n\nTHREE MOST SIMILAR COMPLETED JOBS:\n{{ JSON.stringify($json.similar_jobs, null, 2) }}",
+        "text": "=Draft a engagement letter from this scoping call.\n\nJOB TYPE: {{ $json.job_type }}\nLOCALITY: {{ $json.locality }}\n\nNOTES FROM THE scoping call:\n{{ $json.visit_notes }}\n\nPRICE LIST (csv):\n{{ $json.rate_card_csv }}\n\nTHREE MOST SIMILAR COMPLETED mandateS:\n{{ JSON.stringify($json.similar_jobs, null, 2) }}",
         "messages": {
           "messageValues": [
             {
-              "message": "You draft electrical quotes for a small contractor in canton St. Gallen. Your output is REVIEWED AND CORRECTED by the owner before anything is sent. Draft accordingly: it is far better to flag uncertainty than to look confident.\n\nRULES\n1. Every line item must use a code from the rate card. If work is needed that has no code, put it in unpriced_items with a description. Never invent a code or a rate \u2014 that is the most expensive mistake available to you.\n2. Surface every assumption. Anything you inferred rather than read \u2014 cable runs, wall construction, access, spare ways in the board \u2014 goes in assumptions. The owner scans that list first to catch you being wrong.\n3. Use the similar jobs as a sanity check, not a template. If your total differs from a comparable job by more than 30%, say so in flags and explain why. Do not quietly adjust to match.\n4. Optional scope stays optional: mark those lines optional true, never folded into the main total.\n5. No discounts. Pricing strategy is the owner's decision, not yours.\n6. State exclusions. Groundwork, making good, scaffolding, permits and disposal are commonly assumed by customers and commonly not quoted.\n\nPRICING\nLabour: estimate hours per task, LAB-JRN unless out-of-hours is stated.\nMaterials: quantity x rate, then apply the MRK-MAT markup to material lines only.\nCompliance: new installations require CRT-SNC. Do not omit it.\nVAT: 8.1% of subtotal. Round line totals to 0.05 CHF, the total to 1 CHF."
+              "message": "You draft engagement letters for a small tax and accounting advisory firm in canton St. Gallen, Switzerland. Your output is REVIEWED AND CORRECTED by a person before anything is sent. Draft accordingly: it is far better to flag uncertainty than to look confident.\n\nRULES\n1. Every line item must use a code from the price list. If work is needed that has no code, put it in unpriced_items with a description. Never invent a code or a rate \u2014 that is the most expensive mistake available to you.\n2. Surface every assumption. Anything you inferred rather than read \u2014 cable runs, wall construction, access, spare ways in the board \u2014 goes in assumptions. The owner scans that list first to catch you being wrong.\n3. Use the similar past work as a sanity check, not a template. If your total differs from a comparable job by more than 30%, say so in flags and explain why. Do not quietly adjust to match.\n4. Optional scope stays optional: mark those lines optional true, never folded into the main total.\n5. No discounts. Pricing strategy is the owner's decision, not yours.\n6. State exclusions. There are always things a customer assumes are included and that are not. Name them.\n\nHOW PRICING WORKS HERE\nMixed. Recurring compliance work (bookkeeping, payroll, VAT, standard tax returns, small-company annual accounts) is sold as fixed fees or monthly retainers from a package list, while advisory, restructuring, valuation and anything with unknown record quality is billed hourly at seniority-based rates with an estimated range and a stated assumption about the state of the client's records. Fees are quoted excluding VAT at 8.1%, and disbursements such as commercial-register and authority fees are passed through.\n\nCOMPLIANCE\nBefore any fee is quoted the firm must run an independence and conflict-of-interest check against the existing client base (the counterparty in a dispute, the other shareholder, a competitor already advised) and, where it acts as a financial intermediary, complete client identification under the anti-money-laundering rules; for statutory audit work independence requirements under the Swiss Code of Obligations apply and are stricter still. The specific Swiss provisions and their scope are illustrative here and must be confirmed with the firm's compliance officer. Do not omit it.\n\nVAT: 8.1% of subtotal. Round line totals to 0.05 CHF, the total to 1 CHF."
             }
           ]
         },
         "hasOutputParser": true,
         "batching": {}
       },
-      "id": "affcd06f-a5f8-41f5-b194-c50a54535e73",
+      "id": "7f8fd031-7fd0-4d6c-88b5-2dc3380df102",
       "name": "Draft the quote",
       "type": "@n8n/n8n-nodes-langchain.chainLlm",
       "typeVersion": 1.7,
@@ -128,7 +128,7 @@
           "maxTokensToSample": 4096
         }
       },
-      "id": "7818b883-f168-49ad-afd7-a2fef43a38b1",
+      "id": "60d3edee-e1d6-4875-aa99-c2e2a8c6f108",
       "name": "Claude \u2014 drafting",
       "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
       "typeVersion": 1.3,
@@ -142,7 +142,7 @@
         "schemaType": "manual",
         "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"line_items\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"code\": {\n            \"type\": \"string\"\n          },\n          \"description\": {\n            \"type\": \"string\"\n          },\n          \"quantity\": {\n            \"type\": \"number\"\n          },\n          \"unit_rate_chf\": {\n            \"type\": \"number\"\n          },\n          \"line_total_chf\": {\n            \"type\": \"number\"\n          },\n          \"optional\": {\n            \"type\": \"boolean\"\n          }\n        },\n        \"required\": [\n          \"code\",\n          \"description\",\n          \"quantity\",\n          \"unit_rate_chf\",\n          \"line_total_chf\"\n        ]\n      }\n    },\n    \"unpriced_items\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"description\": {\n            \"type\": \"string\"\n          },\n          \"why\": {\n            \"type\": \"string\"\n          }\n        }\n      }\n    },\n    \"assumptions\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    },\n    \"exclusions\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    },\n    \"flags\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    },\n    \"subtotal_chf\": {\n      \"type\": \"number\"\n    },\n    \"vat_chf\": {\n      \"type\": \"number\"\n    },\n    \"total_chf\": {\n      \"type\": \"number\"\n    },\n    \"confidence\": {\n      \"type\": \"number\"\n    }\n  },\n  \"required\": [\n    \"line_items\",\n    \"assumptions\",\n    \"exclusions\",\n    \"subtotal_chf\",\n    \"vat_chf\",\n    \"total_chf\",\n    \"confidence\"\n  ]\n}"
       },
-      "id": "29480661-94c4-4205-af19-81420c22291b",
+      "id": "fdf23a03-5180-423a-b3b8-b11e7133c5b3",
       "name": "Quote shape",
       "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
       "typeVersion": 1.2,
@@ -153,9 +153,9 @@
     },
     {
       "parameters": {
-        "jsCode": "// Deterministic checks the model does not get a vote on.\n//\n// An invented rate code is the failure mode that costs real money, so it is caught in\n// code and counted \u2014 not left to the reviewer to spot. Every one of these findings is a\n// row in your results chapter.\nconst draft = $json.output ?? $json;\nconst rateCard = $('Load rate card').all().map(i => i.json);\nconst codes = new Set(rateCard.map(r => r.code));\n\nconst invented = [];\nlet recomputed = 0;\n\nfor (const li of draft.line_items ?? []) {\n  if (!codes.has(li.code)) {\n    invented.push(li.code);\n    continue;\n  }\n  const card = rateCard.find(r => r.code === li.code);\n  const expected = Number(card.rate_chf) * Number(li.quantity);\n  // Flag arithmetic drift over 1 CHF. The model is not a calculator and should not be\n  // trusted as one; this is cheaper than asking it to show its working.\n  if (Math.abs(expected - Number(li.line_total_chf)) > 1 && !li.optional) {\n    li.arithmetic_warning = `expected ${expected.toFixed(2)} from rate card`;\n  }\n  if (!li.optional) recomputed += expected;\n}\n\nconst stated = Number(draft.subtotal_chf ?? 0);\nconst drift = Math.abs(recomputed - stated);\n\nreturn [{\n  json: {\n    ...$('Build pricing context').first().json,\n    drafted: draft,\n    validation: {\n      invented_codes: invented,\n      invented_code_count: invented.length,\n      subtotal_recomputed_chf: Number(recomputed.toFixed(2)),\n      subtotal_drift_chf: Number(drift.toFixed(2)),\n      // Any of these means the draft is unsafe to present without a warning banner.\n      needs_attention: invented.length > 0 || drift > 5 || (draft.confidence ?? 0) < 0.5,\n    },\n    drafted_at: new Date().toISOString(),\n    prompt_version: '1.0.0',\n    model: 'claude-sonnet-4-5',\n  },\n}];"
+        "jsCode": "// Deterministic checks the model does not get a vote on.\n//\n// An invented rate code is the failure mode that costs real money, so it is caught in\n// code and counted \u2014 not left to the reviewer to spot. Every one of these findings is a\n// row in your results chapter.\nconst draft = $json.output ?? $json;\nconst rateCard = $('Load price list').all().map(i => i.json);\nconst codes = new Set(rateCard.map(r => r.code));\n\nconst invented = [];\nlet recomputed = 0;\n\nfor (const li of draft.line_items ?? []) {\n  if (!codes.has(li.code)) {\n    invented.push(li.code);\n    continue;\n  }\n  const card = rateCard.find(r => r.code === li.code);\n  const expected = Number(card.rate_chf) * Number(li.quantity);\n  // Flag arithmetic drift over 1 CHF. The model is not a calculator and should not be\n  // trusted as one; this is cheaper than asking it to show its working.\n  if (Math.abs(expected - Number(li.line_total_chf)) > 1 && !li.optional) {\n    li.arithmetic_warning = `expected ${expected.toFixed(2)} from rate card`;\n  }\n  if (!li.optional) recomputed += expected;\n}\n\nconst stated = Number(draft.subtotal_chf ?? 0);\nconst drift = Math.abs(recomputed - stated);\n\nreturn [{\n  json: {\n    ...$('Build pricing context').first().json,\n    drafted: draft,\n    validation: {\n      invented_codes: invented,\n      invented_code_count: invented.length,\n      subtotal_recomputed_chf: Number(recomputed.toFixed(2)),\n      subtotal_drift_chf: Number(drift.toFixed(2)),\n      // Any of these means the draft is unsafe to present without a warning banner.\n      needs_attention: invented.length > 0 || drift > 5 || (draft.confidence ?? 0) < 0.5,\n    },\n    drafted_at: new Date().toISOString(),\n    prompt_version: '1.0.0',\n    model: 'claude-sonnet-4-5',\n  },\n}];"
       },
-      "id": "80355799-cbb3-4a15-8f80-4273f9f84046",
+      "id": "207fc2e3-e251-4eb2-a0f0-86a330f01ba9",
       "name": "Check against rate card",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -289,7 +289,7 @@
         },
         "options": {}
       },
-      "id": "1c00b531-3ef9-4a9e-b1b2-711dce3810c5",
+      "id": "47be462b-f89f-43d4-b763-3bdc1816882f",
       "name": "Store draft",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
@@ -302,7 +302,7 @@
       "parameters": {
         "jsCode": "const d = $json.drafted;\nreturn [{\n  json: {\n    ...$json,\n    total_chf: d.total_chf,\n    confidence: d.confidence,\n    invented_code_count: $json.validation.invented_code_count,\n    subtotal_drift_chf: $json.validation.subtotal_drift_chf,\n    needs_attention: $json.validation.needs_attention,\n    draft_json: JSON.stringify(d),\n    review_opened_at: new Date().toISOString(),\n  },\n}];"
       },
-      "id": "8bef555d-d0c8-4f6a-8dc7-c031578d05f3",
+      "id": "7cebf611-5dbc-4bc9-b978-a97a37c05775",
       "name": "Prepare review",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -318,7 +318,7 @@
         "height": 400,
         "color": 2
       },
-      "id": "59f72189-421d-484e-93d0-7d523d63494f",
+      "id": "d82039d7-8ad1-489b-88c4-c8e5d2e5c134",
       "name": "Note 2",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
@@ -337,7 +337,7 @@
           "webhookSuffix": "approve"
         }
       },
-      "id": "f4207c40-2eb4-43bc-8b5a-1f6c8415c811",
+      "id": "aef96174-6bf7-4605-ad87-2ee444b3cc74",
       "name": "Await owner approval",
       "type": "n8n-nodes-base.wait",
       "typeVersion": 1.1,
@@ -345,19 +345,19 @@
         1540,
         -140
       ],
-      "webhookId": "1fc355cd-c8c1-4c35-8b00-2841e278d2fb"
+      "webhookId": "c7e6c831-f6c1-4203-8a39-15da059fa97d"
     },
     {
       "parameters": {
         "operation": "send",
         "fromEmail": "workflow@example.ch",
         "toEmail": "owner@example.ch",
-        "subject": "=Quote draft ready \u2014 {{ $json.job_id }} \u2014 CHF {{ $json.total_chf }}",
+        "subject": "=Engagement letter draft ready \u2014 {{ $json.job_id }} \u2014 CHF {{ $json.total_chf }}",
         "emailFormat": "html",
         "html": "=<p>Draft for <strong>{{ $json.job_id }}</strong> ({{ $json.job_type }}, {{ $json.locality }}).</p><p><strong>Total: CHF {{ $json.total_chf }}</strong> \u00b7 model confidence {{ $json.confidence }}</p>{{ $json.needs_attention ? '<p style=\\\"color:#b00\\\"><strong>Needs attention:</strong> ' + $json.invented_code_count + ' unrecognised rate code(s), ' + 'subtotal drift CHF ' + $json.subtotal_drift_chf + '</p>' : '' }}<h4>Assumptions the draft made</h4><ul>{{ $json.drafted.assumptions.map(a => '<li>' + a + '</li>').join('') }}</ul><h4>Excluded</h4><ul>{{ $json.drafted.exclusions.map(a => '<li>' + a + '</li>').join('') }}</ul><h4>Lines</h4><pre>{{ JSON.stringify($json.drafted.line_items, null, 2) }}</pre><p><a href=\"{{ $execution.resumeUrl }}\">Approve as drafted</a> \u2014 or edit the sheet first, then approve.</p>",
         "options": {}
       },
-      "id": "3e427b72-1909-406a-995d-94b146437851",
+      "id": "b638b17b-caf6-4074-84b9-edffaac83809",
       "name": "Send review request",
       "type": "n8n-nodes-base.emailSend",
       "typeVersion": 2.1,
@@ -370,7 +370,7 @@
       "parameters": {
         "jsCode": "// THE measurement. Everything else in this workflow exists so that this node has\n// something honest to compare.\n//\n// The approved version is read back from the sheet because that is where the owner\n// actually edits it. If she approves without touching anything, drafted === approved\n// and the override list is empty \u2014 which is itself the finding you are looking for.\nconst before = $('Prepare review').first().json;\nconst drafted = before.drafted;\n\nlet approved = drafted;\ntry {\n  approved = JSON.parse($json.approved_json ?? '{}');\n  if (!approved.line_items) approved = drafted;\n} catch (e) {\n  approved = drafted;\n}\n\nconst overridden = [];\nif (Number(approved.total_chf) !== Number(drafted.total_chf)) overridden.push('total_chf');\n\nconst byCode = (arr) => Object.fromEntries((arr ?? []).map(li => [li.code, li]));\nconst dMap = byCode(drafted.line_items);\nconst aMap = byCode(approved.line_items);\n\nfor (const code of new Set([...Object.keys(dMap), ...Object.keys(aMap)])) {\n  const d = dMap[code], a = aMap[code];\n  if (!a) { overridden.push(`line_removed:${code}`); continue; }\n  if (!d) { overridden.push(`line_added:${code}`);   continue; }\n  if (Number(d.quantity)      !== Number(a.quantity))      overridden.push(`quantity:${code}`);\n  if (Number(d.unit_rate_chf) !== Number(a.unit_rate_chf)) overridden.push(`rate:${code}`);\n}\n\nconst openedAt = new Date(before.review_opened_at);\nconst now = new Date();\n\nreturn [{\n  json: {\n    job_id: before.job_id,\n    prompt_version: before.prompt_version,\n    model: before.model,\n    review_opened_at: before.review_opened_at,\n    review_approved_at: now.toISOString(),\n    review_duration_seconds: Math.round((now - openedAt) / 1000),\n    drafted_total_chf: drafted.total_chf,\n    approved_total_chf: approved.total_chf,\n    delta_chf: Number((Number(approved.total_chf) - Number(drafted.total_chf)).toFixed(2)),\n    line_count_drafted: (drafted.line_items ?? []).length,\n    line_count_approved: (approved.line_items ?? []).length,\n    fields_overridden: overridden,\n    override_count: overridden.length,\n    // Untouched means the owner trusted it as-is. Tracked weekly, the rise of this\n    // number is calibration \u2014 and it is the chart that answers the research question.\n    approved_untouched: overridden.length === 0,\n    invented_code_count: before.invented_code_count,\n  },\n}];"
       },
-      "id": "7bc3d0a7-d32c-4bec-a8dd-080c35cc3aed",
+      "id": "89673d38-dda3-4acd-b544-e89db949889d",
       "name": "Diff draft against approved",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -524,7 +524,7 @@
         },
         "options": {}
       },
-      "id": "f7131ea0-9c38-4143-934a-77f5d135f7db",
+      "id": "f04d4391-2f2c-4214-9f32-d4884bd73944",
       "name": "Record review outcome",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
@@ -540,7 +540,7 @@
         "height": 300,
         "color": 4
       },
-      "id": "0712609b-df67-4560-b00f-5fc2a1bb1649",
+      "id": "d8dc94ea-4aee-4912-9400-12ee29d58276",
       "name": "Note 3",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
@@ -573,23 +573,23 @@
         ]
       ]
     },
-    "Site visit complete": {
+    "Scoping call complete": {
       "main": [
         [
           {
-            "node": "Load rate card",
+            "node": "Load price list",
             "type": "main",
             "index": 0
           },
           {
-            "node": "Load past jobs",
+            "node": "Load past work",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Load rate card": {
+    "Load price list": {
       "main": [
         [
           {
@@ -600,7 +600,7 @@
         ]
       ]
     },
-    "Load past jobs": {
+    "Load past work": {
       "main": [
         [
           {

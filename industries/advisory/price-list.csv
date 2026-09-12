@@ -1,0 +1,31 @@
+code,description,unit,rate_chf,category,notes
+HRL-PTR,Partner / Treuhandexperte,hour,290.00,labour,Signing partner. Reviews all engagement letters above threshold. Illustrative rate.
+HRL-MGR,Mandate manager,hour,195.00,labour,Owns the client relationship and the fixed-fee mandates. Illustrative rate.
+HRL-SEN,Senior accountant,hour,155.00,labour,Illustrative rate.
+HRL-JNR,Junior accountant,hour,110.00,labour,Illustrative rate.
+HRL-APR,Apprentice (KV Treuhand),hour,65.00,labour,Must be reviewed by senior or above.
+HRL-PAY,Payroll specialist,hour,145.00,labour,Illustrative rate.
+HRL-AUD,Audit staff (limited statutory audit),hour,165.00,labour,Only on mandates where the firm is free of conflict to audit.
+FIX-TRS,Individual tax return - simple,job,390.00,fixed-fee,Employment income, one canton, no property, no securities beyond a single account.
+FIX-TRC,Individual tax return - complex,job,1150.00,fixed-fee,From-price. Property, securities portfolio, inter-cantonal or foreign elements. Scoped before confirming.
+FIX-TRE,Corporate tax return (GmbH / AG),job,980.00,fixed-fee,Assumes accounts prepared by this firm. Add FIX-ASG if not.
+FIX-ASE,Annual financial statements - sole proprietor,job,1450.00,fixed-fee,Assumes bookkeeping current and reconciled.
+FIX-ASG,Annual financial statements - small GmbH / AG,job,2900.00,fixed-fee,From-price. Assumes clean trial balance at year end.
+FIX-VAT,VAT return per period,job,340.00,fixed-fee,Effective method. Net tax rate (Saldosteuersatz) filings priced at 60 percent of this. Illustrative.
+FIX-VRG,VAT registration,job,650.00,fixed-fee,Excludes retrospective registration and back-filing which are hourly.
+FIX-INC,GmbH formation - standard,job,2200.00,fixed-fee,Firm's fee only. Notary and commercial-register costs pass through as DSB-REG.
+FIX-PAY,Payroll run per employee per month,each,29.00,fixed-fee,Minimum 5 employees per run. Includes payslip and standard deductions.
+FIX-PYE,Payroll year-end per employee,each,48.00,fixed-fee,Wage certificate and annual social-insurance declarations.
+FIX-SIR,Social insurance registration per employee,each,95.00,fixed-fee,AHV and accident insurance enrolment. Illustrative.
+FIX-VAL,Indicative business valuation,job,4800.00,fixed-fee,From-price. Single method, management figures, no due diligence and no expert opinion.
+RET-BKS,Bookkeeping retainer - small,month,480.00,retainer,Up to 100 transactions per month. Excess billed at HRL-JNR.
+RET-BKM,Bookkeeping retainer - medium,month,1150.00,retainer,Up to 350 transactions per month. Excess billed at HRL-JNR.
+RET-CFO,Part-time finance lead,day,1750.00,retainer,Minimum one day per month on a twelve-month term. Illustrative.
+CMP-KYC,AML client identification and onboarding,job,280.00,compliance,Charged once per new client. Beneficial-owner identification for non-resident clients. Scope illustrative - confirm with compliance officer.
+CMP-COI,Conflict and independence check,job,0.00,compliance,Not chargeable. Mandatory before any fee is quoted. Blocks the engagement letter until cleared.
+CMP-AUD,Limited statutory audit - base fee,job,5200.00,compliance,From-price. Subject to independence clearance and licensing. Illustrative.
+SUR-RSH,Rush surcharge,percent,35,surcharge,Applied to labour lines where the client's deadline requires reordering committed work.
+SUR-DIS,Disorganised records surcharge,percent,25,surcharge,Applied where records are materially worse than the condition assumed in the engagement letter. Must be notified before it is incurred.
+SUR-FOR,Foreign correspondent coordination,percent,15,surcharge,Applied to the correspondent's invoice where the firm manages a foreign adviser.
+DSB-REG,Commercial register and notary fees,job,0.00,disbursement,Pass-through at cost. No markup. Amount varies by transaction.
+DSB-TRV,Travel to client premises,km,0.90,disbursement,Rarely applicable - most work is remote. Not charged within St. Gallen city.

@@ -1,0 +1,31 @@
+code,description,unit,rate_chf,category,notes
+SES-INS,General physiotherapy session (insurance tariff),session,52.00,session-insurance,"Illustrative. Tariff-set flat rate per session; practice cannot discount or vary it"
+SES-INL,General physiotherapy session extended duration (insurance tariff),session,77.00,session-insurance,"Illustrative. Only billable where the prescription indicates extended treatment"
+SES-INC,Complex treatment session (insurance tariff),session,96.00,session-insurance,"Illustrative. Neurological and complex post-operative cases"
+SES-S30,General physiotherapy session self-pay 30 min,session,95.00,session-selfpay,
+SES-S45,General physiotherapy session self-pay 45 min,session,130.00,session-selfpay,Most common self-pay unit
+SES-S60,General physiotherapy session self-pay 60 min,session,165.00,session-selfpay,
+ASS-INS,Initial assessment supplement (insurance tariff),session,24.00,assessment,"Illustrative. Billed once per prescription alongside the first session"
+ASS-SLF,Initial assessment self-pay 45 min,session,145.00,assessment,Includes written treatment plan
+ASS-REV,Re-assessment and progress review,session,95.00,assessment,Typically at session six of nine
+MAN-SUP,Manual therapy supplement,session,25.00,supplement,Where indicated on the prescription
+DRY-NDL,Dry needling supplement,session,30.00,supplement,Self-pay only unless prescribed
+ELE-ULT,Electrotherapy or ultrasound supplement,session,18.00,supplement,
+TAP-KIN,Kinesiology taping incl. materials,each,25.00,supplement,
+MTT-IND,Medical training therapy individual supervised,session,110.00,training,MTT on equipment with therapist present
+MTT-GRP,Medical training therapy small group (max 6),session,45.00,training,
+GRP-REH,Rehabilitation exercise class (max 8),session,35.00,training,Ten-class block CHF 315
+LYM-DRN,Manual lymphatic drainage 45 min,session,120.00,specialist,
+PEL-FLR,Pelvic floor therapy 45 min,session,150.00,specialist,Illustrative
+VES-REH,Vestibular rehabilitation 45 min,session,150.00,specialist,Illustrative
+HOM-SUR,Home visit surcharge,visit,50.00,home-visit,"Added to session rate; inside the home-visit area only"
+HOM-TRV,Home visit travel,km,1.20,home-visit,Beyond 10 km from the practice
+HOM-OUT,Home visit outside the home-visit area,visit,0.00,home-visit,"Not offered. Refer to a practice nearer the patient; never quote this line"
+CAN-24H,Late cancellation less than 24 hours notice,event,90.00,cancellation,"Not reimbursable by any insurer; the patient always pays this personally"
+CAN-NOS,Missed appointment without notice,event,110.00,cancellation,Waived once per patient at practice discretion
+REP-INS,Written interim or final report to insurer or referring doctor,report,85.00,reporting,"Often contractually required by accident insurers after six sessions"
+REP-EMP,Workplace or ergonomics assessment report,report,180.00,reporting,Self-pay or employer-paid
+COM-REF,Referral and cover verification before an insurance-billed series,check,0.00,compliance,"Non-billable and mandatory. A human confirms the prescription date, session count and payer before treatment is billed to a third party"
+COM-CON,Health-data consent and processing record at intake,check,0.00,compliance,"Non-billable and mandatory. Special-category data under the revised Swiss FADP; illustrative, confirm current wording with the practice's own counsel"
+COM-DSR,Patient request for a copy of their own record,request,0.00,compliance,"Illustrative: provided free of charge and within statutory time limits"
+VAT-EXM,VAT treatment of medically indicated treatment,note,0.00,compliance,"Illustrative: medically indicated physiotherapy is generally VAT-exempt in Switzerland; non-medical wellness services may attract VAT at 8.1%. Verify per service before invoicing"

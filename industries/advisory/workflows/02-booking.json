@@ -1,0 +1,365 @@
+{
+  "name": "W2 \u00b7 Scoping call booking \u2014 Tax & Treuhand Advisory",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## W2 \u2014 Scoping call booking \u00b7 Tax & Treuhand Advisory\n\n**Boundary: automated proposal, human confirm above CHF 15000.**\nCHF 15,000 is roughly where an engagement stops being a recurring compliance mandate a manager can price from the standard packages and becomes a project with genuine scope risk \u2014 about ten to fifteen days of senior time \u2014 so a partner confirms the fee and the scope wording before it is sent. Scored 3/2/4.\n\n### The measurable thing here is travel\nClustering by locality is the whole point. Travel minutes per engagement, before and after, is unambiguous and it converts directly to money \u2014 the easiest result in the whole project to defend.\n\nRecord the unclustered estimate too, or you have nothing to compare against. The **Cluster by locality** node writes both.",
+        "width": 480,
+        "height": 380,
+        "color": 5
+      },
+      "id": "caf04323-8b57-4557-8c61-9653cd5c6bf7",
+      "name": "Note 1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -820,
+        -360
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 7 * * 1-5"
+            }
+          ]
+        }
+      },
+      "id": "61c57349-fdeb-4067-aff1-76975e732651",
+      "name": "Every weekday 07:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -280,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "REPLACE_WITH_YOUR_SPREADSHEET_ID"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "jobs"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "state",
+              "lookupValue": "qualified"
+            }
+          ]
+        },
+        "combineFilters": "AND",
+        "options": {}
+      },
+      "id": "d6b06cd6-ee8d-43e0-a162-cdcf1cf30302",
+      "name": "Get work awaiting scoping call",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -60,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Group the week's visits by locality so one trip covers several jobs.\n//\n// The travel model is a flat per-locality estimate, not a routing API. That is a\n// deliberate limitation: a real distance matrix would give better numbers but the\n// comparison here is between clustered and unclustered under the SAME model, so the\n// saving is valid even though the absolute minutes are approximate. Say exactly this\n// in your limitations section \u2014 it is a defensible simplification, not a shortcut.\nconst DEPOT = 'St. Gallen';\nconst MINUTES_FROM_DEPOT = {\n  'St. Gallen': 8, 'Wittenbach': 12, 'Abtwil': 14, 'Gossau': 18,\n  'Herisau': 22, 'Waldkirch': 20, 'Rorschach': 24,\n};\nconst DEFAULT_MINUTES = 30;\n\nconst jobs = items.map(i => i.json).filter(j => j.job_id);\nconst HIGH_VALUE = 15000;\n\nconst byLocality = {};\nfor (const j of jobs) {\n  const loc = j.locality || 'unknown';\n  (byLocality[loc] ??= []).push(j);\n}\n\nconst out = [];\nlet slotDay = 1;\n\nfor (const [loc, group] of Object.entries(byLocality)) {\n  const legMinutes = MINUTES_FROM_DEPOT[loc] ?? DEFAULT_MINUTES;\n\n  // Unclustered: every job is its own return trip from the depot.\n  const unclustered = legMinutes * 2 * group.length;\n  // Clustered: one trip out, one back, short hops between jobs in the same locality.\n  const clustered = legMinutes * 2 + Math.max(0, group.length - 1) * 6;\n\n  group.forEach((j, idx) => {\n    const d = new Date();\n    d.setDate(d.getDate() + slotDay);\n    d.setHours(8 + idx * 2, 0, 0, 0);\n\n    out.push({\n      json: {\n        job_id: j.job_id,\n        customer_name: j.customer_name,\n        email: j.email,\n        locality: loc,\n        cluster_size: group.length,\n        clustered_with: group.filter(g => g.job_id !== j.job_id).map(g => g.job_id).join(' '),\n        proposed_slot: d.toISOString(),\n        travel_minutes_unclustered: Math.round(unclustered / group.length),\n        travel_minutes_clustered: Math.round(clustered / group.length),\n        travel_minutes_saved: Math.round((unclustered - clustered) / group.length),\n        estimated_value_chf: Number(j.estimated_value_chf ?? 0),\n        needs_owner_confirmation: Number(j.estimated_value_chf ?? 0) >= HIGH_VALUE,\n      },\n    });\n  });\n  slotDay++;\n}\n\nreturn out;"
+      },
+      "id": "720e38be-9683-46dd-a30d-fc83533b2f51",
+      "name": "Cluster by locality",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        180,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "35ce7041-5351-45ff-a9d6-9be9d527d3d0",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json.needs_owner_confirmation }}",
+              "rightValue": ""
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "19f2b8fd-1af4-4b0c-b336-3c293981b961",
+      "name": "High value?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        420,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "fromEmail": "workflow@example.ch",
+        "toEmail": "owner@example.ch",
+        "subject": "=Confirm scoping call \u2014 {{ $json.job_id }} \u2014 est. CHF {{ $json.estimated_value_chf }}",
+        "emailFormat": "html",
+        "html": "=<p>Proposed: <strong>{{ $json.proposed_slot }}</strong> for {{ $json.customer_name }} in {{ $json.locality }}.</p><p>Clustered with: {{ $json.clustered_with || 'nothing \u2014 single trip' }}</p><p>Above the CHF 15000 threshold, so this one is yours to confirm.</p>",
+        "options": {}
+      },
+      "id": "737e0ecc-206d-40ff-afbf-4577062176f7",
+      "name": "Ask owner to confirm",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        660,
+        -280
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "fromEmail": "workflow@example.ch",
+        "toEmail": "={{ $json.email }}",
+        "subject": "A time for your scoping call",
+        "emailFormat": "html",
+        "html": "=<p>Hallo {{ $json.customer_name }},</p><p>We can do <strong>{{ $json.proposed_slot }}</strong>. Reply to this email if that does not suit and we will find another time.</p>",
+        "options": {}
+      },
+      "id": "396b6526-5a81-45f2-955d-594808537954",
+      "name": "Offer slot to customer",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        660,
+        40
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "REPLACE_WITH_YOUR_SPREADSHEET_ID"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "scheduling"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "job_id": "={{ $json.job_id }}",
+            "locality": "={{ $json.locality }}",
+            "cluster_size": "={{ $json.cluster_size }}",
+            "clustered_with": "={{ $json.clustered_with }}",
+            "proposed_slot": "={{ $json.proposed_slot }}",
+            "travel_minutes_unclustered": "={{ $json.travel_minutes_unclustered }}",
+            "travel_minutes_clustered": "={{ $json.travel_minutes_clustered }}",
+            "travel_minutes_saved": "={{ $json.travel_minutes_saved }}",
+            "needs_owner_confirmation": "={{ $json.needs_owner_confirmation }}"
+          },
+          "schema": [
+            {
+              "id": "job_id",
+              "displayName": "job_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "locality",
+              "displayName": "locality",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "cluster_size",
+              "displayName": "cluster_size",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "clustered_with",
+              "displayName": "clustered_with",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "proposed_slot",
+              "displayName": "proposed_slot",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "travel_minutes_unclustered",
+              "displayName": "travel_minutes_unclustered",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "travel_minutes_clustered",
+              "displayName": "travel_minutes_clustered",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "travel_minutes_saved",
+              "displayName": "travel_minutes_saved",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "needs_owner_confirmation",
+              "displayName": "needs_owner_confirmation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "matchingColumns": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "id": "06884bcd-f606-48b8-932f-43661c631bce",
+      "name": "Record travel figures",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        900,
+        -120
+      ]
+    }
+  ],
+  "connections": {
+    "Every weekday 07:00": {
+      "main": [
+        [
+          {
+            "node": "Get work awaiting scoping call",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get work awaiting scoping call": {
+      "main": [
+        [
+          {
+            "node": "Cluster by locality",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cluster by locality": {
+      "main": [
+        [
+          {
+            "node": "High value?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "High value?": {
+      "main": [
+        [
+          {
+            "node": "Ask owner to confirm",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Offer slot to customer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ask owner to confirm": {
+      "main": [
+        [
+          {
+            "node": "Record travel figures",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Offer slot to customer": {
+      "main": [
+        [
+          {
+            "node": "Record travel figures",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "instanceId": ""
+  }
+}

@@ -1,14 +1,14 @@
 {
-  "name": "W5 \u00b7 Completion to cash",
+  "name": "W5 \u00b7 Completion to cash \u2014 Private dental practice",
   "nodes": [
     {
       "parameters": {
-        "content": "## W5 \u2014 Completion to cash\n\n**Boundary: automatic issue only when the invoice matches the approved quote exactly. Any variation goes to a human.**\nThe test is not job size, it is whether the amount differs from what the customer agreed to. Scored 3/4/4.\n\n### Two lags, both worth measuring\n`completion \u2192 invoice` is the one automation moves, often dramatically \u2014 the person who finishes the job is not the person who invoices, and that handover is where days disappear.\n\n`invoice \u2192 paid` mostly is not yours to move. Report both and be honest about which one you affected.\n\nIn the sample data 28% of jobs carried a variation. If your business is similar, the human gate fires on roughly one job in four \u2014 which is the number that tells you whether this workflow is worth its complexity.",
+        "content": "## W5 \u2014 Completion to cash \u00b7 Private dental practice\n\n**Boundary: automatic issue only when the invoice matches the approved quote exactly. Any variation goes to a human.**\nThe test is not size, it is whether the amount differs from what was agreed. Scored 3/4/4.\n\n### Two lags, both worth measuring\n`completion \u2192 invoice` is the one automation moves, often dramatically \u2014 the person who finishes the job is not the person who invoices, and that handover is where days disappear.\n\n`invoice \u2192 paid` mostly is not yours to move. Report both and be honest about which one you affected.\n\nIf roughly a quarter of your work carries a variation, the gate fires on one in four \u2014 and that rate is the number that tells you whether this workflow is worth its complexity.",
         "width": 500,
         "height": 460,
         "color": 5
       },
-      "id": "455a6d4d-25a1-4bc0-acce-e1cdca6b0431",
+      "id": "de0d8df7-2d15-41b2-9d86-7d3b136cbdec",
       "name": "Note 1",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
@@ -24,15 +24,15 @@
         "responseMode": "lastNode",
         "options": {}
       },
-      "id": "b02dfe75-d091-44a8-a006-178e15b70200",
-      "name": "Job marked complete",
+      "id": "5c21b763-befd-4e47-b476-bf0fc4cd743d",
+      "name": "Treatment marked complete",
       "type": "n8n-nodes-base.webhook",
       "typeVersion": 2,
       "position": [
         -320,
         -100
       ],
-      "webhookId": "8bcca799-b118-4d26-8149-08c499e26364"
+      "webhookId": "c7c00715-0ee7-41a6-b5aa-3ca8f4007e9f"
     },
     {
       "parameters": {
@@ -48,8 +48,8 @@
         },
         "options": {}
       },
-      "id": "bce9447f-1737-460b-b75f-bcec362aec91",
-      "name": "Load approved quote",
+      "id": "a48b9c8a-37f1-4fa2-b9eb-935278f0fef5",
+      "name": "Load approved treatment plan",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
       "position": [
@@ -59,9 +59,9 @@
     },
     {
       "parameters": {
-        "jsCode": "const body = $('Job marked complete').first().json.body ?? $('Job marked complete').first().json;\nconst rows = $('Load approved quote').all().map(i => i.json);\nconst quote = rows.find(r => r.job_id === body.job_id);\n\nconst variations = Array.isArray(body.variations) ? body.variations : [];\nconst variationTotal = variations.reduce((s, v) => s + Number(v.amount_chf ?? 0), 0);\n\nconst agreed = Number(quote?.approved_total_chf ?? 0);\nconst invoiceTotal = Number((agreed + variationTotal).toFixed(2));\n\nconst completedAt = body.completed_at ?? new Date().toISOString();\n\nreturn [{\n  json: {\n    job_id: body.job_id,\n    completed_at: completedAt,\n    agreed_total_chf: agreed,\n    variation_total_chf: Number(variationTotal.toFixed(2)),\n    invoice_total_chf: invoiceTotal,\n    variation_count: variations.length,\n    variation_summary: variations.map(v => `${v.description} (CHF ${v.amount_chf})`).join('; '),\n    // The single condition. Not job size, not a percentage \u2014 any difference at all from\n    // what the customer agreed to means a human sends it.\n    matches_agreed: variations.length === 0 && Math.abs(invoiceTotal - agreed) < 0.01,\n    email: body.email ?? quote?.email ?? null,\n    customer_name: body.customer_name ?? null,\n  },\n}];"
+        "jsCode": "const body = $('Treatment marked complete').first().json.body ?? $('Treatment marked complete').first().json;\nconst rows = $('Load approved treatment plan').all().map(i => i.json);\nconst quote = rows.find(r => r.job_id === body.job_id);\n\nconst variations = Array.isArray(body.variations) ? body.variations : [];\nconst variationTotal = variations.reduce((s, v) => s + Number(v.amount_chf ?? 0), 0);\n\nconst agreed = Number(quote?.approved_total_chf ?? 0);\nconst invoiceTotal = Number((agreed + variationTotal).toFixed(2));\n\nconst completedAt = body.completed_at ?? new Date().toISOString();\n\nreturn [{\n  json: {\n    job_id: body.job_id,\n    completed_at: completedAt,\n    agreed_total_chf: agreed,\n    variation_total_chf: Number(variationTotal.toFixed(2)),\n    invoice_total_chf: invoiceTotal,\n    variation_count: variations.length,\n    variation_summary: variations.map(v => `${v.description} (CHF ${v.amount_chf})`).join('; '),\n    // The single condition. Not job size, not a percentage \u2014 any difference at all from\n    // what the customer agreed to means a human sends it.\n    matches_agreed: variations.length === 0 && Math.abs(invoiceTotal - agreed) < 0.01,\n    email: body.email ?? quote?.email ?? null,\n    customer_name: body.customer_name ?? null,\n  },\n}];"
       },
-      "id": "2da64d40-1e85-4815-ad11-3107b521d6f7",
+      "id": "a8036845-ced5-4588-9daf-8c125a6fd5da",
       "name": "Compare to what was agreed",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -82,7 +82,7 @@
           "combinator": "and",
           "conditions": [
             {
-              "id": "dde65c0b-6746-41ec-bb03-b2dc44d43437",
+              "id": "118c3e1c-4553-43f2-b83b-34b32ed92136",
               "operator": {
                 "type": "boolean",
                 "operation": "true",
@@ -96,8 +96,8 @@
         "looseTypeValidation": true,
         "options": {}
       },
-      "id": "1240749f-df53-45fd-a8f1-08b87c3d6df7",
-      "name": "Matches the agreed quote?",
+      "id": "a26df820-04bc-45ff-9144-722cb23f4fd9",
+      "name": "Matches what was agreed?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
       "position": [
@@ -112,10 +112,10 @@
         "toEmail": "={{ $json.email }}",
         "subject": "=Invoice \u2014 {{ $json.job_id }} \u2014 CHF {{ $json.invoice_total_chf }}",
         "emailFormat": "html",
-        "html": "=<p>Hallo {{ $json.customer_name }},</p><p>The work is complete. Invoice total <strong>CHF {{ $json.invoice_total_chf }}</strong>, as quoted.</p><p>Payable within 30 days.</p>",
+        "html": "=<p>Hallo {{ $json.customer_name }},</p><p>The work is complete. Invoice total <strong>CHF {{ $json.invoice_total_chf }}</strong>, as agreed.</p><p>Payable within 30 days.</p>",
         "options": {}
       },
-      "id": "5fc15dc6-b552-468b-a3ba-70f531cd0097",
+      "id": "f7ea1fc7-4981-4045-b4c0-2410e4237013",
       "name": "Issue invoice",
       "type": "n8n-nodes-base.emailSend",
       "typeVersion": 2.1,
@@ -129,12 +129,12 @@
         "operation": "send",
         "fromEmail": "workflow@example.ch",
         "toEmail": "owner@example.ch",
-        "subject": "=Variation to approve \u2014 {{ $json.job_id }} \u2014 CHF {{ $json.variation_total_chf }} over quote",
+        "subject": "=Variation to approve \u2014 {{ $json.job_id }} \u2014 CHF {{ $json.variation_total_chf }} over the treatment plan",
         "emailFormat": "html",
-        "html": "=<p><strong>{{ $json.job_id }}</strong> finished at a different number from the one the customer agreed.</p><p>Agreed: CHF {{ $json.agreed_total_chf }}<br>Variations: CHF {{ $json.variation_total_chf }}<br><strong>Invoice would be: CHF {{ $json.invoice_total_chf }}</strong></p><p>{{ $json.variation_summary }}</p><p>Nothing has been sent. Send it yourself once you are happy.</p>",
+        "html": "=<p><strong>{{ $json.job_id }}</strong> finished at a different number from the one that was agreed.</p><p>Agreed: CHF {{ $json.agreed_total_chf }}<br>Variations: CHF {{ $json.variation_total_chf }}<br><strong>Invoice would be: CHF {{ $json.invoice_total_chf }}</strong></p><p>{{ $json.variation_summary }}</p><p>Nothing has been sent. Send it yourself once you are happy.</p>",
         "options": {}
       },
-      "id": "18c3899a-4994-499f-937c-9d827f49e311",
+      "id": "ea7ae3d4-796f-4733-8395-2382eb6c9e6f",
       "name": "Owner approves variation",
       "type": "n8n-nodes-base.emailSend",
       "typeVersion": 2.1,
@@ -248,7 +248,7 @@
         },
         "options": {}
       },
-      "id": "f4cdf416-e446-4432-8d65-89b2e5596787",
+      "id": "54519eee-62d0-46e5-a967-13201905ce3b",
       "name": "Record cash timings",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
@@ -261,7 +261,7 @@
       "parameters": {
         "jsCode": "// completion \u2192 invoice is the lag automation actually moves. Capture it at the moment\n// the invoice goes, not at the end of the month from memory.\nreturn [{ json: { ...$json, invoiced_at: new Date().toISOString(),\n                  auto_issued: $json.matches_agreed === true } }];"
       },
-      "id": "5012abb7-2f8d-4860-8f97-c9b583be83d4",
+      "id": "d7395991-cd81-4a6d-8fc2-c84b9af0cb29",
       "name": "Stamp invoice time",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -272,18 +272,18 @@
     }
   ],
   "connections": {
-    "Job marked complete": {
+    "Treatment marked complete": {
       "main": [
         [
           {
-            "node": "Load approved quote",
+            "node": "Load approved treatment plan",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Load approved quote": {
+    "Load approved treatment plan": {
       "main": [
         [
           {
@@ -298,14 +298,14 @@
       "main": [
         [
           {
-            "node": "Matches the agreed quote?",
+            "node": "Matches what was agreed?",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Matches the agreed quote?": {
+    "Matches what was agreed?": {
       "main": [
         [
           {

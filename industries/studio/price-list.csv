@@ -1,0 +1,31 @@
+code,description,unit,rate_chf,category,notes
+PRD-FDY,Photography full day up to 10 hours,day,1850.00,production,Illustrative - single photographer
+PRD-HDY,Photography half day up to 5 hours,half-day,1100.00,production,Illustrative
+PRD-HRL,Photography hourly minimum 2 hours,hour,260.00,production,For short portrait and press jobs
+VID-FDY,Video full day one operator incl. camera and audio kit,day,2200.00,production,Illustrative
+VID-HDY,Video half day one operator,half-day,1350.00,production,Illustrative
+CRW-SEC,Second shooter or second camera operator,day,850.00,production,Required on most full-day weddings
+WED-ELP,Elopement or civil ceremony coverage 2 hours,package,980.00,package,Includes 40 edited images
+WED-STD,Wedding coverage 8 hours,package,3200.00,package,Includes cull and edit of approx 400 images
+WED-FUL,Wedding full day 12 hours incl. second shooter,package,4600.00,package,Illustrative - the common package
+HDS-PER,Corporate headshots on location per person minimum 5,each,145.00,package,Includes one retouched frame per person
+PST-CUL,Culling colour correction and export,hour,110.00,post-production,Typical wedding 8-14 hours
+PST-RET,Advanced retouching per finished image,image,45.00,post-production,Beauty product and composite work
+PST-EDT,Video editing,hour,135.00,post-production,
+PST-GRD,Colour grade and sound mix,hour,150.00,post-production,
+PST-SUB,Subtitling and translation per language per finished minute,minute,38.00,post-production,Translation bought in - illustrative
+LIC-WEB,Usage licence own website and social channels 2 years,licence,0.00,licence,Included in the base production fee
+LIC-CHE,Usage licence Switzerland all media 12 months,licence,1400.00,licence,Illustrative - scales with media plan
+LIC-EUR,Usage licence Europe all media 12 months,licence,3200.00,licence,Illustrative
+LIC-BUY,Buyout unlimited media perpetual,licence,6500.00,licence,Illustrative - often exceeds the shooting fee
+LIC-EXT,Licence extension per further 12 months,percent,55,licence,Percentage of the original licence fee
+TRV-KMS,Travel by road beyond 25km from the studio,km,1.10,travel,Charged both ways
+TRV-DAY,Travel day non-shooting,day,750.00,travel,Applies to destination work
+TRV-ACC,Accommodation and per diem,night,240.00,travel,At cost - figure illustrative
+EQP-STU,Studio hire incl. lighting and backdrops,half-day,320.00,equipment,
+EQP-DRN,Drone aerial operation,day,690.00,equipment,Subject to airspace and permission checks - illustrative
+CMP-REL,Model and property release administration,job,120.00,compliance,Collecting and filing signed releases before delivery
+CMP-DPA,Image retention and data processing agreement,job,150.00,compliance,Illustrative - not legal advice
+SUR-WKD,Weekend or public holiday surcharge,percent,25,surcharge,Applied to production lines only
+SUR-RSH,Rush delivery inside 72 hours,percent,35,surcharge,Applied to post-production lines
+SUR-CXL,Cancellation inside 14 days of the shoot date,percent,50,surcharge,Date cannot be resold at short notice

@@ -1,0 +1,868 @@
+{
+  "name": "W1 \u00b7 Enquiry intake and triage \u2014 Private dental practice",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## W1 \u2014 Enquiry intake \u00b7 Private dental practice\n\n**Boundary decision: fully automated.**\nVariance low-ish, consequence low (a misfiling surfaces in the queue), input short. Scored 2/1/2 on variance / consequence / data-availability.\n\n**Except one case.** An emergency must leave the automated path immediately. That branch is the red note below \u2014 if it ever stops working, that is not a bug report, it is a finding for your results chapter.\n\n### Before you run this\n1. Open **Extract enquiry fields** and pick your Anthropic credential.\n2. Open the three **Google Sheets** nodes and set the document ID.\n3. Replace `REPLACE_WITH_YOUR_SPREADSHEET_ID` throughout.\n\n### Test it\nPaste each record from this pack's `enquiries.json` into the form. Every file has a record that must be refused, one that must escalate, and one out-of-area case \u2014 each says so in its `notes_for_testing`.\n\n### What is different about this industry\nThe stress point moves from logistics to clinical triage and consent. For a trade contractor the risky automated decision is a scheduling or pricing one and the worst case is an unhappy customer, whereas here the intake step is doing something that looks like clinical assessment on free text describing symptoms, and a mis-sorted swelling is a patient safety event rather than a service failure \u2014 so the human boundary sits much earlier, at classification, not at the quote. Pricing meanwhile is more automatable than in trades, because a coded tariff makes the priced document nearly deterministic once the diagnosis is fixed, but the follow-up is far more sensitive: chasing an unaccepted treatment plan is chasing someone who is frightened or short of money, and the same nudge cadence that works for a rewiring quote reads as predatory. The comparative value for the thesis is that dentistry inverts the usual assumption \u2014 the drafting step is safer to automate than the intake step, which is the opposite of the trades case.",
+        "width": 520,
+        "height": 560,
+        "color": 5
+      },
+      "id": "4bc98e74-36d8-4c6a-88a2-693684789f17",
+      "name": "Note 1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -820,
+        -420
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "none",
+        "formTitle": "Request a treatment plan",
+        "formDescription": "Tell us what you need and we will reply within one business day.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Your name",
+              "fieldName": "customer_name",
+              "fieldType": "text",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Email",
+              "fieldName": "email",
+              "fieldType": "email",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Phone",
+              "fieldName": "phone",
+              "fieldType": "text",
+              "requiredField": false
+            },
+            {
+              "fieldLabel": "Where the work is",
+              "fieldName": "address",
+              "fieldType": "text",
+              "requiredField": false
+            },
+            {
+              "fieldLabel": "What do you need?",
+              "fieldName": "raw",
+              "fieldType": "textarea",
+              "requiredField": true
+            }
+          ]
+        },
+        "responseMode": "onReceived",
+        "options": {
+          "path": "enquiry",
+          "buttonLabel": "Send enquiry"
+        }
+      },
+      "id": "f71ecb3c-d500-4a6c-b40f-491f451a50e3",
+      "name": "Enquiry form",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [
+        -260,
+        -180
+      ],
+      "webhookId": "404c5e20-4ec3-448e-b69d-2a18cf76fef4"
+    },
+    {
+      "parameters": {
+        "jsCode": "// One shape for every channel. The form is only one door \u2014 email, SMS and phone\n// transcripts arrive via other triggers and are normalised to exactly this object,\n// so everything downstream reads the same fields regardless of where it came from.\n//\n// `raw` is never overwritten anywhere in the pipeline. Extraction can then be re-run\n// and compared later, which is what makes the prompt-version comparison possible.\nconst now = new Date().toISOString();\n\nreturn items.map((item, i) => {\n  const f = item.json;\n  return {\n    json: {\n      job_id: `JOB-${new Date().getFullYear()}-${String(Date.now()).slice(-4)}${i}`,\n      state: 'new',\n      created_at: now,\n      channel: f.channel ?? 'web-form',\n      raw: f.raw ?? '',\n      form_customer_name: f.customer_name ?? null,\n      form_email: f.email ?? null,\n      form_phone: f.phone ?? null,\n      form_address: f.address ?? null,\n      events: [],\n    },\n  };\n});"
+      },
+      "id": "84d89b6b-491c-4d18-9166-a18a8de3a2e2",
+      "name": "Normalise inbound",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -40,
+        -180
+      ]
+    },
+    {
+      "parameters": {
+        "text": "={{ $json.raw }}",
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"customer_name\": {\n      \"type\": [\n        \"string\",\n        \"null\"\n      ]\n    },\n    \"email\": {\n      \"type\": [\n        \"string\",\n        \"null\"\n      ]\n    },\n    \"phone\": {\n      \"type\": [\n        \"string\",\n        \"null\"\n      ]\n    },\n    \"locality\": {\n      \"type\": [\n        \"string\",\n        \"null\"\n      ]\n    },\n    \"language\": {\n      \"type\": \"string\",\n      \"enum\": [\n        \"de\",\n        \"en\",\n        \"fr\",\n        \"it\",\n        \"unknown\"\n      ]\n    },\n    \"job_type\": {\n      \"type\": [\n        \"string\",\n        \"null\"\n      ]\n    },\n    \"described_scope\": {\n      \"type\": [\n        \"string\",\n        \"null\"\n      ]\n    },\n    \"urgency\": {\n      \"type\": \"string\",\n      \"enum\": [\n        \"emergency\",\n        \"urgent\",\n        \"scheduled\",\n        \"no_rush\",\n        \"unknown\"\n      ]\n    },\n    \"deadline\": {\n      \"type\": [\n        \"string\",\n        \"null\"\n      ]\n    },\n    \"in_service_area\": {\n      \"type\": [\n        \"boolean\",\n        \"null\"\n      ]\n    },\n    \"is_repeat_customer\": {\n      \"type\": \"boolean\"\n    },\n    \"missing_fields\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    },\n    \"extraction_confidence\": {\n      \"type\": \"number\"\n    },\n    \"disqualify_reason\": {\n      \"type\": [\n        \"string\",\n        \"null\"\n      ]\n    }\n  },\n  \"required\": [\n    \"language\",\n    \"urgency\",\n    \"missing_fields\",\n    \"extraction_confidence\"\n  ]\n}",
+        "options": {
+          "systemPromptTemplate": "You extract structured data from enquiry messages sent to a private dental practice in canton St. Gallen, Switzerland. They arrive in German or English and are often incomplete.\n\nNever invent a value. If a field is not present, return null and name it in missing_fields. A plausible guess is worse than a null: a null gets asked about, a guess gets acted on.\n\nKeep described_scope in the language it was written in and set language accordingly.\n\nurgency is about consequence, not tone. A calm message can describe an emergency and an angry one can describe something trivial. For this business, treat as an emergency: A genuine emergency is a presentation with airway, bleeding or time-limited tissue risk: facial or submandibular swelling that is spreading, closing the eye, crossing the midline of the neck or accompanied by fever, trismus or difficulty swallowing or breathing; bleeding after an extraction that has not stopped after 30 minutes of firm pressure, especially in a patient on anticoagulants; and dental trauma in which a permanent tooth has been knocked out or displaced, where the reimplantation window is measured in tens of minutes. These must reach a clinician by voice immediately and must never sit in an automated triage queue, be answered by an auto-reply, or be offered the next available online slot. Severe pain alone is urgent but not an emergency; pain plus swelling plus fever is.\n\nService area \u2014 Geography matters far less here than for a trade contractor: the patient travels to the chair, not the other way round, so the boundary is about whether someone will realistically keep a recall appointment every six months rather than whether a van can reach them \u2014 a Wil or Bregenz commuter who passes through St. Gallen daily is a better fit than a Rorschach resident without a car, and the automation should never hard-reject on postcode alone.\nIn: St. Gallen, Gossau SG, Wittenbach, Goldach, Rorschach, Teufen AR, Flawil, Arbon TG. Out: Lugano, Geneva, Sion, Zermatt. If a locality is stated but you do not recognise it, return null rather than guessing \u2014 a wrong false loses real work.\n\nextraction_confidence is your honest estimate that a human reading the same text would extract the same fields. Do not inflate it.\n\nIf no actionable treatment is described at all, set job_type null and give a disqualify_reason."
+        }
+      },
+      "id": "83b7389c-3ed1-43ad-a227-aafd4953f2ac",
+      "name": "Extract enquiry fields",
+      "type": "@n8n/n8n-nodes-langchain.informationExtractor",
+      "typeVersion": 1.2,
+      "position": [
+        220,
+        -180
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "id",
+          "value": "claude-sonnet-4-5-20250929"
+        },
+        "options": {
+          "temperature": 0,
+          "maxTokensToSample": 2048
+        }
+      },
+      "id": "1873f672-282c-4f01-a81b-ed99eeec5ff2",
+      "name": "Claude \u2014 extraction",
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [
+        240,
+        40
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Form fields beat model extraction. If the customer typed their name into a labelled\n// box, that is ground truth; the model's reading of free text is not.\nconst src = $('Normalise inbound').first().json;\nconst ex  = $json.output ?? $json;\n\nconst merged = {\n  ...src,\n  customer_name: src.form_customer_name || ex.customer_name || null,\n  email:         src.form_email         || ex.email         || null,\n  phone:         src.form_phone         || ex.phone         || null,\n  address:       src.form_address       || null,\n  locality:      ex.locality ?? null,\n  language:      ex.language ?? 'unknown',\n  job_type:      ex.job_type ?? null,\n  described_scope: ex.described_scope ?? null,\n  urgency:       ex.urgency ?? 'unknown',\n  deadline:      ex.deadline ?? null,\n  in_service_area: ex.in_service_area ?? null,\n  is_repeat_customer: ex.is_repeat_customer ?? false,\n  missing_fields: ex.missing_fields ?? [],\n  extraction_confidence: ex.extraction_confidence ?? 0,\n  disqualify_reason: ex.disqualify_reason ?? null,\n};\n\n// Contactability is decided here, not by the model. A job with no way to reach the\n// customer cannot be quoted no matter how well described it is.\nconst contactable = Boolean(merged.email || merged.phone);\nif (!contactable && !merged.disqualify_reason) {\n  merged.disqualify_reason = 'no contact detail supplied';\n}\n\nmerged.is_emergency = merged.urgency === 'emergency';\n\n// Low confidence is not a disqualification \u2014 it is a routing signal. These go to a\n// human to read rather than being refused or auto-progressed.\nmerged.needs_human_read =\n  merged.extraction_confidence < 0.6 || merged.missing_fields.length > 2;\n\nif (merged.disqualify_reason)            merged.route = 'disqualified';\nelse if (merged.in_service_area === false) merged.route = 'out_of_area';\nelse                                       merged.route = 'qualified';\n\nmerged.state = merged.route === 'qualified' ? 'qualified' : 'disqualified';\nreturn [{ json: merged }];"
+      },
+      "id": "bfd8da99-f7b9-47f0-becb-c46e469afdbe",
+      "name": "Merge and score",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        -180
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "fe4bc136-2855-4278-a521-2989abbf3894",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json.is_emergency }}",
+              "rightValue": ""
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "e58f240c-3b74-43f2-aa3f-28fcdd72dee4",
+      "name": "Emergency?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        700,
+        -180
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## The escalation branch\n\nThis is the only unconditional exit from the automated path in W1.\n\nA genuine emergency is a presentation with airway, bleeding or time-limited tissue risk: facial or submandibular swelling that is spreading, closing the eye, crossing the midline of the neck or accompanied by fever, trismus or difficulty swallowing or breathing; bleeding after an extraction that has not stopped after 30 minutes of firm pressure, especially in a patient on anticoagulants; and dental trauma in which a permanent tooth has been knocked out or displaced, where the reimplantation window is measured in tens of minutes. These must reach a clinician by voice immediately and must never sit in an automated triage queue, be answered by an auto-reply, or be offered the next available online slot. Severe pain alone is urgent but not an emergency; pain plus swelling plus fever is.\n\nNone of that belongs in a pricing pipeline. If your triage ever routes one into the normal flow, **report it** \u2014 an automation that handles an emergency as routine admin is exactly the kind of boundary failure this thesis is about.",
+        "width": 380,
+        "height": 240,
+        "color": 2
+      },
+      "id": "ab9fe7f5-750a-4df9-84e6-6647f938f96b",
+      "name": "Note 2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        940,
+        -480
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "fromEmail": "workflow@example.ch",
+        "toEmail": "owner@example.ch",
+        "subject": "=URGENT \u2014 {{ $json.customer_name || 'unknown contact' }} \u2014 call now",
+        "emailFormat": "html",
+        "html": "=<p><strong>Possible emergency. Automated handling stopped.</strong></p><p><strong>Contact:</strong> {{ $json.phone || $json.email || 'NONE SUPPLIED' }}</p><p><strong>They wrote:</strong></p><blockquote>{{ $json.raw }}</blockquote><p>Record {{ $json.job_id }} received {{ $json.created_at }}.</p>",
+        "options": {}
+      },
+      "id": "178a8a47-4d31-410e-828c-adbfd87c7da9",
+      "name": "Alert owner immediately",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        960,
+        -280
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "outputKey": "qualified",
+              "renameOutput": true,
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "loose"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "5b0c0762-bf71-4e39-ba3b-6c7b0b02759b",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{ $json.route }}",
+                    "rightValue": "qualified"
+                  }
+                ]
+              }
+            },
+            {
+              "outputKey": "out_of_area",
+              "renameOutput": true,
+              "conditions": {
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "loose"
+                },
+                "combinator": "and",
+                "conditions": [
+                  {
+                    "id": "5915eb61-c0e9-4083-8897-4d6ca20d3d47",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "leftValue": "={{ $json.route }}",
+                    "rightValue": "out_of_area"
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "options": {
+          "fallbackOutput": "extra",
+          "renameFallbackOutput": "disqualified"
+        }
+      },
+      "id": "fb40bd78-3562-46c9-9be6-4c24087aab09",
+      "name": "Route",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        960,
+        -60
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "REPLACE_WITH_YOUR_SPREADSHEET_ID"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "jobs"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "job_id": "={{ $json.job_id }}",
+            "state": "={{ $json.state }}",
+            "created_at": "={{ $json.created_at }}",
+            "channel": "={{ $json.channel }}",
+            "customer_name": "={{ $json.customer_name }}",
+            "email": "={{ $json.email }}",
+            "phone": "={{ $json.phone }}",
+            "address": "={{ $json.address }}",
+            "locality": "={{ $json.locality }}",
+            "language": "={{ $json.language }}",
+            "job_type": "={{ $json.job_type }}",
+            "described_scope": "={{ $json.described_scope }}",
+            "urgency": "={{ $json.urgency }}",
+            "deadline": "={{ $json.deadline }}",
+            "in_service_area": "={{ $json.in_service_area }}",
+            "extraction_confidence": "={{ $json.extraction_confidence }}",
+            "needs_human_read": "={{ $json.needs_human_read }}",
+            "raw": "={{ $json.raw }}"
+          },
+          "schema": [
+            {
+              "id": "job_id",
+              "displayName": "job_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "state",
+              "displayName": "state",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "channel",
+              "displayName": "channel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "customer_name",
+              "displayName": "customer_name",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "phone",
+              "displayName": "phone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "address",
+              "displayName": "address",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "locality",
+              "displayName": "locality",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "language",
+              "displayName": "language",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "job_type",
+              "displayName": "job_type",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "described_scope",
+              "displayName": "described_scope",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "urgency",
+              "displayName": "urgency",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "deadline",
+              "displayName": "deadline",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "in_service_area",
+              "displayName": "in_service_area",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "extraction_confidence",
+              "displayName": "extraction_confidence",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "needs_human_read",
+              "displayName": "needs_human_read",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "raw",
+              "displayName": "raw",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "matchingColumns": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "id": "dd1a14db-eb58-4040-aba7-d2434a30a32c",
+      "name": "Save job record",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1240,
+        -220
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "fromEmail": "workflow@example.ch",
+        "toEmail": "={{ $json.email }}",
+        "subject": "About your enquiry",
+        "emailFormat": "html",
+        "html": "=<p>Hallo {{ $json.customer_name || '' }},</p><p>Thanks for getting in touch. {{ $json.locality }} is outside the area we cover, so we are not able to take this on \u2014 we did not want to leave you waiting on a reply.</p><p>Best of luck with it.</p>",
+        "options": {}
+      },
+      "id": "95aa4451-acde-4a6c-b230-94efea195bcf",
+      "name": "Decline \u2014 out of area",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1240,
+        40
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "REPLACE_WITH_YOUR_SPREADSHEET_ID"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "unqualified"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "job_id": "={{ $json.job_id }}",
+            "created_at": "={{ $json.created_at }}",
+            "channel": "={{ $json.channel }}",
+            "disqualify_reason": "={{ $json.disqualify_reason }}",
+            "extraction_confidence": "={{ $json.extraction_confidence }}",
+            "raw": "={{ $json.raw }}"
+          },
+          "schema": [
+            {
+              "id": "job_id",
+              "displayName": "job_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "channel",
+              "displayName": "channel",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "disqualify_reason",
+              "displayName": "disqualify_reason",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "extraction_confidence",
+              "displayName": "extraction_confidence",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "raw",
+              "displayName": "raw",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "matchingColumns": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "id": "1f9420e3-8360-42a6-aebc-4f3ff574f150",
+      "name": "Park for review",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1240,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## Refusals are data\n\nNothing is thrown away. Everything the triage refuses is written to the `unqualified` tab with the reason.\n\nTwo reasons this matters for the thesis:\n\n1. **False refusals are invisible otherwise.** A real job wrongly refused looks exactly like no enquiry at all. Reviewing this tab weekly is how you find them.\n2. Refusal rate over time, with reasons, is a genuine result \u2014 and it is the number the business owner will care about most.",
+        "width": 420,
+        "height": 250,
+        "color": 4
+      },
+      "id": "a7ebd250-f241-4798-af6e-96f47205986f",
+      "name": "Note 3",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1180,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "REPLACE_WITH_YOUR_SPREADSHEET_ID"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "events"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "at": "={{ $json.at }}",
+            "workflow": "={{ $json.workflow }}",
+            "node": "={{ $json.node }}",
+            "status": "={{ $json.status }}",
+            "job_id": "={{ $json.job_id }}",
+            "human_intervened": "={{ $json.human_intervened }}",
+            "note": "={{ $json.note }}"
+          },
+          "schema": [
+            {
+              "id": "at",
+              "displayName": "at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "workflow",
+              "displayName": "workflow",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "node",
+              "displayName": "node",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "job_id",
+              "displayName": "job_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "human_intervened",
+              "displayName": "human_intervened",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "note",
+              "displayName": "note",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "matchingColumns": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "id": "4fdf65ad-0527-4562-9e64-9381696fc7de",
+      "name": "Log event",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1520,
+        -220
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Instrumentation is built BEFORE the automation, not after. Without this table there\n// is no baseline, no before/after, and no results chapter \u2014 only a feature description.\nreturn [{\n  json: {\n    at: new Date().toISOString(),\n    workflow: 'W1-intake',\n    node: 'triage-complete',\n    status: 'ok',\n    job_id: $json.job_id ?? null,\n    human_intervened: false,\n    note: `route=${$json.route} confidence=${$json.extraction_confidence} lang=${$json.language}`,\n  },\n}];"
+      },
+      "id": "9d83ba19-5fbe-47bf-8f65-8fb5ee3100f8",
+      "name": "Build event",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1400,
+        -220
+      ]
+    }
+  ],
+  "connections": {
+    "Claude \u2014 extraction": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Extract enquiry fields",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Enquiry form": {
+      "main": [
+        [
+          {
+            "node": "Normalise inbound",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalise inbound": {
+      "main": [
+        [
+          {
+            "node": "Extract enquiry fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract enquiry fields": {
+      "main": [
+        [
+          {
+            "node": "Merge and score",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Merge and score": {
+      "main": [
+        [
+          {
+            "node": "Emergency?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Emergency?": {
+      "main": [
+        [
+          {
+            "node": "Alert owner immediately",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Route",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route": {
+      "main": [
+        [
+          {
+            "node": "Save job record",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Decline \u2014 out of area",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Park for review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Save job record": {
+      "main": [
+        [
+          {
+            "node": "Build event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build event": {
+      "main": [
+        [
+          {
+            "node": "Log event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "instanceId": ""
+  }
+}

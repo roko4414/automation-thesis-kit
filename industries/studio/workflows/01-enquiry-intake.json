@@ -1,14 +1,14 @@
 {
-  "name": "W1 \u00b7 Enquiry intake and triage",
+  "name": "W1 \u00b7 Enquiry intake and triage \u2014 Photo & video studio",
   "nodes": [
     {
       "parameters": {
-        "content": "## W1 \u2014 Enquiry intake and triage\n\n**Boundary decision: fully automated.**\nVariance low-ish, consequence low (a misfiled enquiry surfaces in the queue), input short. Scored 2/1/2 on variance / consequence / data-availability.\n\n**Except one case.** A safety emergency must leave the automated path immediately. That branch is the red note below \u2014 if it ever stops working, that is not a bug report, it is a finding for your results chapter.\n\n### Before you run this\n1. Open **Extract enquiry fields** and pick your Anthropic credential.\n2. Open the three **Google Sheets** nodes and set the document ID.\n3. Replace `REPLACE_WITH_YOUR_SPREADSHEET_ID` throughout.\n\n### Test it\nPaste each record from `sample-data/enquiries.json` into the form. ENQ-006 must be refused. ENQ-011 must escalate. ENQ-008 must be out of area.",
+        "content": "## W1 \u2014 Enquiry intake \u00b7 Photo & video studio\n\n**Boundary decision: fully automated.**\nVariance low-ish, consequence low (a misfiling surfaces in the queue), input short. Scored 2/1/2 on variance / consequence / data-availability.\n\n**Except one case.** An emergency must leave the automated path immediately. That branch is the red note below \u2014 if it ever stops working, that is not a bug report, it is a finding for your results chapter.\n\n### Before you run this\n1. Open **Extract enquiry fields** and pick your Anthropic credential.\n2. Open the three **Google Sheets** nodes and set the document ID.\n3. Replace `REPLACE_WITH_YOUR_SPREADSHEET_ID` throughout.\n\n### Test it\nPaste each record from this pack's `enquiries.json` into the form. Every file has a record that must be refused, one that must escalate, and one out-of-area case \u2014 each says so in its `notes_for_testing`.\n\n### What is different about this industry\nAvailability is a hard binary on a named date rather than a scheduling puzzle - a second wedding on an already booked Saturday cannot be solved with a better price, a longer lead time or a bigger crew, which is the one failure mode no amount of quoting intelligence can rescue. The deliverable is creative and taste-dependent, so qualification depends on judgements about style fit that do not reduce to structured fields, and a mismatched booking is a worse outcome than a lost one. And the price hinges on usage rights the enquirer usually does not think to mention - the customer asking for 'just a few product photos' for a national campaign is the same sentence as the customer wanting them for an Instagram post, with an order of magnitude between the two proposals.",
         "width": 520,
         "height": 560,
         "color": 5
       },
-      "id": "79871f17-cddd-4894-b0ac-c53b4d104e17",
+      "id": "b221e419-2ff4-4d41-b282-abbf122c5d8a",
       "name": "Note 1",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
@@ -20,8 +20,8 @@
     {
       "parameters": {
         "authentication": "none",
-        "formTitle": "Request a quote",
-        "formDescription": "Tell us what you need. We reply within one business day.",
+        "formTitle": "Request a proposal",
+        "formDescription": "Tell us what you need and we will reply within one business day.",
         "formFields": {
           "values": [
             {
@@ -43,7 +43,7 @@
               "requiredField": false
             },
             {
-              "fieldLabel": "Address of the work",
+              "fieldLabel": "Where the work is",
               "fieldName": "address",
               "fieldType": "text",
               "requiredField": false
@@ -62,7 +62,7 @@
           "buttonLabel": "Send enquiry"
         }
       },
-      "id": "b1ffcf5f-e1d1-46b6-b2dc-8d7affcc6d4c",
+      "id": "e66efcf0-87a7-4a8c-81aa-6d9770a10626",
       "name": "Enquiry form",
       "type": "n8n-nodes-base.formTrigger",
       "typeVersion": 2.2,
@@ -70,13 +70,13 @@
         -260,
         -180
       ],
-      "webhookId": "bee5b7aa-200f-4529-8a0d-1e4b3fc23469"
+      "webhookId": "5401c887-8e01-4693-836a-76ddc1771a6a"
     },
     {
       "parameters": {
         "jsCode": "// One shape for every channel. The form is only one door \u2014 email, SMS and phone\n// transcripts arrive via other triggers and are normalised to exactly this object,\n// so everything downstream reads the same fields regardless of where it came from.\n//\n// `raw` is never overwritten anywhere in the pipeline. Extraction can then be re-run\n// and compared later, which is what makes the prompt-version comparison possible.\nconst now = new Date().toISOString();\n\nreturn items.map((item, i) => {\n  const f = item.json;\n  return {\n    json: {\n      job_id: `JOB-${new Date().getFullYear()}-${String(Date.now()).slice(-4)}${i}`,\n      state: 'new',\n      created_at: now,\n      channel: f.channel ?? 'web-form',\n      raw: f.raw ?? '',\n      form_customer_name: f.customer_name ?? null,\n      form_email: f.email ?? null,\n      form_phone: f.phone ?? null,\n      form_address: f.address ?? null,\n      events: [],\n    },\n  };\n});"
       },
-      "id": "ec07fb82-15ab-4de6-bf4a-1a04e4d030b4",
+      "id": "223b7e15-4813-41b8-bf9b-530e0a1ce5cd",
       "name": "Normalise inbound",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -91,10 +91,10 @@
         "schemaType": "manual",
         "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"customer_name\": {\n      \"type\": [\n        \"string\",\n        \"null\"\n      ]\n    },\n    \"email\": {\n      \"type\": [\n        \"string\",\n        \"null\"\n      ]\n    },\n    \"phone\": {\n      \"type\": [\n        \"string\",\n        \"null\"\n      ]\n    },\n    \"locality\": {\n      \"type\": [\n        \"string\",\n        \"null\"\n      ]\n    },\n    \"language\": {\n      \"type\": \"string\",\n      \"enum\": [\n        \"de\",\n        \"en\",\n        \"fr\",\n        \"it\",\n        \"unknown\"\n      ]\n    },\n    \"job_type\": {\n      \"type\": [\n        \"string\",\n        \"null\"\n      ]\n    },\n    \"described_scope\": {\n      \"type\": [\n        \"string\",\n        \"null\"\n      ]\n    },\n    \"urgency\": {\n      \"type\": \"string\",\n      \"enum\": [\n        \"emergency\",\n        \"urgent\",\n        \"scheduled\",\n        \"no_rush\",\n        \"unknown\"\n      ]\n    },\n    \"deadline\": {\n      \"type\": [\n        \"string\",\n        \"null\"\n      ]\n    },\n    \"in_service_area\": {\n      \"type\": [\n        \"boolean\",\n        \"null\"\n      ]\n    },\n    \"is_repeat_customer\": {\n      \"type\": \"boolean\"\n    },\n    \"missing_fields\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    },\n    \"extraction_confidence\": {\n      \"type\": \"number\"\n    },\n    \"disqualify_reason\": {\n      \"type\": [\n        \"string\",\n        \"null\"\n      ]\n    }\n  },\n  \"required\": [\n    \"language\",\n    \"urgency\",\n    \"missing_fields\",\n    \"extraction_confidence\"\n  ]\n}",
         "options": {
-          "systemPromptTemplate": "You extract structured job data from enquiries to a small electrical contractor in canton St. Gallen, Switzerland. Enquiries arrive in German or English and are often incomplete.\n\nNever invent a value. If a field is not present, return null and name it in missing_fields. A plausible guess is worse than a null: a null gets asked about, a guess gets acted on.\n\nKeep described_scope in the language it was written in and set language accordingly.\n\nurgency is about safety and consequence, not tone. A polite message describing a burning smell is an emergency. An angry message about a dead towel rail is not. Use 'emergency' for: burning smell, smoke, shock, exposed live parts, water near electrics, or total loss of power where a vulnerable occupant is mentioned.\n\nIn service area: St. Gallen, Gossau, Wittenbach, Abtwil, Waldkirch, Rorschach, Herisau, and localities within roughly 25km of St. Gallen. Out: everything else, including Zurich, Winterthur, Chur. If a locality is stated but you do not recognise it, return null rather than guessing \u2014 a wrong false loses a real job.\n\nextraction_confidence is your honest estimate that a human reading the same text would extract the same fields. Do not inflate it.\n\nIf no actionable job is described at all, set job_type null and give a disqualify_reason."
+          "systemPromptTemplate": "You extract structured data from enquiry messages sent to a small photography and video studio in canton St. Gallen, Switzerland. They arrive in German or English and are often incomplete.\n\nNever invent a value. If a field is not present, return null and name it in missing_fields. A plausible guess is worse than a null: a null gets asked about, a guess gets acted on.\n\nKeep described_scope in the language it was written in and set language accordingly.\n\nurgency is about consequence, not tone. A calm message can describe an emergency and an angry one can describe something trivial. For this business, treat as an emergency: Genuinely time-critical means the date cannot be moved and the window closes within days: a wedding or a one-off event happening this week, a photographer or videographer dropping out of a booked date, or a client's campaign, print run or trade-fair stand that has a fixed delivery deadline already committed to a third party. A wedding is the sharpest form of this constraint, because the date is fixed by the couple and the venue and cannot be rescheduled to suit availability, so a late enquiry is either accepted now or lost entirely. Anything in this class must escalate to a human immediately, because the only useful answer is a yes or no on availability from someone who can actually commit the diary.\n\nService area \u2014 Distance is a pricing input here, not a qualifier: travel time, a travel day and accommodation are billable line items, and destination work is normal and often welcome, so an enquiry from outside the area should be priced with travel added rather than declined the way a trade contractor would decline it.\nIn: St. Gallen, Gossau, Wittenbach, Rorschach, Arbon, Herisau, Teufen, Flawil. Out: Zermatt, Lugano, Geneva, Zurich Airport. If a locality is stated but you do not recognise it, return null rather than guessing \u2014 a wrong false loses real work.\n\nextraction_confidence is your honest estimate that a human reading the same text would extract the same fields. Do not inflate it.\n\nIf no actionable shoot is described at all, set job_type null and give a disqualify_reason."
         }
       },
-      "id": "be2c0482-e17f-4fef-ae47-a447dc35e9b2",
+      "id": "034936ac-2aab-4280-b0dc-92bc4d88cd4b",
       "name": "Extract enquiry fields",
       "type": "@n8n/n8n-nodes-langchain.informationExtractor",
       "typeVersion": 1.2,
@@ -115,7 +115,7 @@
           "maxTokensToSample": 2048
         }
       },
-      "id": "6ea13fbb-dc34-4580-8624-25920540cac9",
+      "id": "1e5eb911-0bea-4073-ae64-c6cb8e64dd4a",
       "name": "Claude \u2014 extraction",
       "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
       "typeVersion": 1.3,
@@ -128,7 +128,7 @@
       "parameters": {
         "jsCode": "// Form fields beat model extraction. If the customer typed their name into a labelled\n// box, that is ground truth; the model's reading of free text is not.\nconst src = $('Normalise inbound').first().json;\nconst ex  = $json.output ?? $json;\n\nconst merged = {\n  ...src,\n  customer_name: src.form_customer_name || ex.customer_name || null,\n  email:         src.form_email         || ex.email         || null,\n  phone:         src.form_phone         || ex.phone         || null,\n  address:       src.form_address       || null,\n  locality:      ex.locality ?? null,\n  language:      ex.language ?? 'unknown',\n  job_type:      ex.job_type ?? null,\n  described_scope: ex.described_scope ?? null,\n  urgency:       ex.urgency ?? 'unknown',\n  deadline:      ex.deadline ?? null,\n  in_service_area: ex.in_service_area ?? null,\n  is_repeat_customer: ex.is_repeat_customer ?? false,\n  missing_fields: ex.missing_fields ?? [],\n  extraction_confidence: ex.extraction_confidence ?? 0,\n  disqualify_reason: ex.disqualify_reason ?? null,\n};\n\n// Contactability is decided here, not by the model. A job with no way to reach the\n// customer cannot be quoted no matter how well described it is.\nconst contactable = Boolean(merged.email || merged.phone);\nif (!contactable && !merged.disqualify_reason) {\n  merged.disqualify_reason = 'no contact detail supplied';\n}\n\nmerged.is_emergency = merged.urgency === 'emergency';\n\n// Low confidence is not a disqualification \u2014 it is a routing signal. These go to a\n// human to read rather than being refused or auto-progressed.\nmerged.needs_human_read =\n  merged.extraction_confidence < 0.6 || merged.missing_fields.length > 2;\n\nif (merged.disqualify_reason)            merged.route = 'disqualified';\nelse if (merged.in_service_area === false) merged.route = 'out_of_area';\nelse                                       merged.route = 'qualified';\n\nmerged.state = merged.route === 'qualified' ? 'qualified' : 'disqualified';\nreturn [{ json: merged }];"
       },
-      "id": "183accb4-0cb8-4dea-939d-ef3801fec572",
+      "id": "89e27a8b-e544-4c31-8127-0f560be08203",
       "name": "Merge and score",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -149,7 +149,7 @@
           "combinator": "and",
           "conditions": [
             {
-              "id": "0be09de6-f5e2-4ea6-bcd8-47a635637dc6",
+              "id": "70b8dfe6-cdc5-4086-967f-f29c945485f4",
               "operator": {
                 "type": "boolean",
                 "operation": "true",
@@ -163,7 +163,7 @@
         "looseTypeValidation": true,
         "options": {}
       },
-      "id": "f1fee03c-2c82-48be-b63c-2a9c19ee9e62",
+      "id": "e71739d4-1898-4a1d-a914-0671217e422b",
       "name": "Emergency?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -174,12 +174,12 @@
     },
     {
       "parameters": {
-        "content": "## The escalation branch\n\nThis is the only unconditional exit from the automated path in W1.\n\nA burning smell does not belong in a quoting pipeline. If your triage ever routes one into the normal flow, **report it** \u2014 an automation that handles a safety call as routine admin is exactly the kind of boundary failure the thesis is about.\n\nTest with **ENQ-011**.",
+        "content": "## The escalation branch\n\nThis is the only unconditional exit from the automated path in W1.\n\nGenuinely time-critical means the date cannot be moved and the window closes within days: a wedding or a one-off event happening this week, a photographer or videographer dropping out of a booked date, or a client's campaign, print run or trade-fair stand that has a fixed delivery deadline already committed to a third party. A wedding is the sharpest form of this constraint, because the date is fixed by the couple and the venue and cannot be rescheduled to suit availability, so a late enquiry is either accepted now or lost entirely. Anything in this class must escalate to a human immediately, because the only useful answer is a yes or no on availability from someone who can actually commit the diary.\n\nNone of that belongs in a pricing pipeline. If your triage ever routes one into the normal flow, **report it** \u2014 an automation that handles an emergency as routine admin is exactly the kind of boundary failure this thesis is about.",
         "width": 380,
         "height": 240,
         "color": 2
       },
-      "id": "eb2d8305-a168-4aa8-8efb-3206bf5054b9",
+      "id": "8fb56f83-58b0-4587-baa7-9f129685664e",
       "name": "Note 2",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
@@ -193,12 +193,12 @@
         "operation": "send",
         "fromEmail": "workflow@example.ch",
         "toEmail": "owner@example.ch",
-        "subject": "=SAFETY \u2014 {{ $json.customer_name || 'unknown caller' }} \u2014 call now",
+        "subject": "=URGENT \u2014 {{ $json.customer_name || 'unknown contact' }} \u2014 call now",
         "emailFormat": "html",
-        "html": "=<p><strong>Possible safety emergency. Automated handling stopped.</strong></p><p><strong>Contact:</strong> {{ $json.phone || $json.email || 'NONE SUPPLIED' }}</p><p><strong>They wrote:</strong></p><blockquote>{{ $json.raw }}</blockquote><p>Job {{ $json.job_id }} received {{ $json.created_at }}.</p>",
+        "html": "=<p><strong>Possible emergency. Automated handling stopped.</strong></p><p><strong>Contact:</strong> {{ $json.phone || $json.email || 'NONE SUPPLIED' }}</p><p><strong>They wrote:</strong></p><blockquote>{{ $json.raw }}</blockquote><p>Record {{ $json.job_id }} received {{ $json.created_at }}.</p>",
         "options": {}
       },
-      "id": "b2ef69d6-1bd6-444c-bcb5-221af3a922de",
+      "id": "0df31c6d-dc01-4db4-9ae7-ddcea8166630",
       "name": "Alert owner immediately",
       "type": "n8n-nodes-base.emailSend",
       "typeVersion": 2.1,
@@ -224,7 +224,7 @@
                 "combinator": "and",
                 "conditions": [
                   {
-                    "id": "2823a760-d3f2-4c59-a0c3-c8cd765fe258",
+                    "id": "aa5252ff-49e3-4afa-89d8-bf89482266eb",
                     "operator": {
                       "type": "string",
                       "operation": "equals"
@@ -248,7 +248,7 @@
                 "combinator": "and",
                 "conditions": [
                   {
-                    "id": "647725be-fe22-4b66-808f-a26e188f932d",
+                    "id": "b9325359-9600-4020-9ffe-987dd8621ea0",
                     "operator": {
                       "type": "string",
                       "operation": "equals"
@@ -266,7 +266,7 @@
           "renameFallbackOutput": "disqualified"
         }
       },
-      "id": "a0378743-9955-4f08-8d09-18bc37f982ef",
+      "id": "d49375a1-e025-4bd0-bed8-7777335c66b1",
       "name": "Route",
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.2,
@@ -480,7 +480,7 @@
         },
         "options": {}
       },
-      "id": "1bdda1c5-8ce0-46a0-9dbe-b379419441ed",
+      "id": "53374801-4e06-4a0b-9a3f-f42cca9a045d",
       "name": "Save job record",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
@@ -499,7 +499,7 @@
         "html": "=<p>Hallo {{ $json.customer_name || '' }},</p><p>Thanks for getting in touch. {{ $json.locality }} is outside the area we cover, so we are not able to take this on \u2014 we did not want to leave you waiting on a reply.</p><p>Best of luck with it.</p>",
         "options": {}
       },
-      "id": "6eb99e52-984d-4297-a15e-ef58baeae83d",
+      "id": "61711e6f-5bd4-4c07-94eb-20c8540934e2",
       "name": "Decline \u2014 out of area",
       "type": "n8n-nodes-base.emailSend",
       "typeVersion": 2.1,
@@ -593,7 +593,7 @@
         },
         "options": {}
       },
-      "id": "43a836cd-35ba-44e7-9112-7e7126cfe92a",
+      "id": "d3e43c8e-f2d0-4491-94b9-793c2d6535f6",
       "name": "Park for review",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
@@ -609,7 +609,7 @@
         "height": 250,
         "color": 4
       },
-      "id": "94245a99-cc4a-46a9-8d1c-85f72ee59aaa",
+      "id": "09057088-3ed0-4b6c-9161-a5ffb9a3dfde",
       "name": "Note 3",
       "type": "n8n-nodes-base.stickyNote",
       "typeVersion": 1,
@@ -713,7 +713,7 @@
         },
         "options": {}
       },
-      "id": "79c2e3fe-3378-4a59-9f4e-99a07815f4c1",
+      "id": "c6475ded-abdf-45eb-b452-c53f688ebf87",
       "name": "Log event",
       "type": "n8n-nodes-base.googleSheets",
       "typeVersion": 4.5,
@@ -726,7 +726,7 @@
       "parameters": {
         "jsCode": "// Instrumentation is built BEFORE the automation, not after. Without this table there\n// is no baseline, no before/after, and no results chapter \u2014 only a feature description.\nreturn [{\n  json: {\n    at: new Date().toISOString(),\n    workflow: 'W1-intake',\n    node: 'triage-complete',\n    status: 'ok',\n    job_id: $json.job_id ?? null,\n    human_intervened: false,\n    note: `route=${$json.route} confidence=${$json.extraction_confidence} lang=${$json.language}`,\n  },\n}];"
       },
-      "id": "07570b09-5660-4221-af4d-8102084a13d7",
+      "id": "8fc590e1-d425-40a3-a082-bf75dad2f885",
       "name": "Build event",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,

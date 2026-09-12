@@ -1,6 +1,14 @@
 #!/usr/bin/env python3
 """
-Build the five n8n workflow JSON files.
+Build the five n8n workflows, once per industry pack.
+
+One skeleton, many industries. The workflows are written with <<TOKENS>> where the
+industry shows through — what a quote is called, what counts as an emergency, where the
+service area stops — and `specialise()` swaps them for a pack's values.
+
+That is not a code-tidiness choice, it is the transferability claim under test: if
+moving to a new industry only needs a pack, the pattern generalises; if it needs surgery
+on the workflows, it does not. Either answer is a real finding.
 
 Written as a generator rather than by hand because the failure modes of hand-authored
 n8n JSON are all bookkeeping: duplicate node names collapse connections silently,
@@ -18,8 +26,8 @@ import json
 import uuid
 from pathlib import Path
 
-OUT = Path(__file__).resolve().parent.parent / "workflows"
-OUT.mkdir(exist_ok=True)
+ROOT = Path(__file__).resolve().parent.parent
+INDUSTRIES = ROOT / "industries"
 
 # --- pinned type versions -------------------------------------------------
 FORM_TRIGGER = ("n8n-nodes-base.formTrigger", 2.2)
@@ -90,7 +98,7 @@ class WF:
         """Cluster sub-node connects UP into its root node."""
         self.wire(sub, root, ctype=ctype)
 
-    def dump(self, filename):
+    def dump(self, filename, pack):
         doc = {
             "name": self.name,
             "nodes": self.nodes,
@@ -99,7 +107,10 @@ class WF:
             "settings": {"executionOrder": "v1"},
             "meta": {"instanceId": ""},
         }
-        p = OUT / filename
+        doc = specialise(doc, tokens(pack))
+        out = INDUSTRIES / pack["slug"] / "workflows"
+        out.mkdir(parents=True, exist_ok=True)
+        p = out / filename
         p.write_text(json.dumps(doc, indent=2) + "\n")
         return p
 
@@ -166,19 +177,77 @@ def sheets_append(doc_placeholder, tab, columns):
 SHEET_ID = "REPLACE_WITH_YOUR_SPREADSHEET_ID"
 
 
+def load_packs():
+    packs = []
+    for d in sorted(INDUSTRIES.iterdir()):
+        f = d / "pack.json"
+        if f.exists():
+            packs.append(json.loads(f.read_text()))
+    if not packs:
+        raise SystemExit("no industry packs found under industries/*/pack.json")
+    return packs
+
+
+def tokens(pack):
+    area = pack["service_area"]
+    cap = lambda s: s[:1].upper() + s[1:]
+    return {
+        "<<LABEL>>": pack["label"],
+        "<<BUSINESS>>": pack["business"],
+        "<<REGION>>": pack["region"],
+        "<<CUR>>": pack["currency"],
+        "<<VAT>>": str(pack["vat_rate"]),
+        "<<QUOTE>>": pack["quote_word"],
+        "<<QUOTE_CAP>>": cap(pack["quote_word"]),
+        "<<VISIT>>": pack["visit_word"],
+        "<<VISIT_CAP>>": cap(pack["visit_word"]),
+        "<<ENQUIRY>>": pack["enquiry_word"],
+        "<<ENQUIRY_CAP>>": cap(pack["enquiry_word"]),
+        "<<JOB>>": pack["job_word"],
+        "<<JOB_CAP>>": cap(pack["job_word"]),
+        "<<UNIT>>": pack["unit_of_work"],
+        "<<AREA_IN>>": ", ".join(area["in"]),
+        "<<AREA_OUT>>": ", ".join(area["out"]),
+        "<<AREA_NOTE>>": area["note"],
+        "<<EMERGENCY_DEF>>": pack["emergency_definition"],
+        "<<THRESHOLD>>": str(pack["high_value_threshold_chf"]),
+        "<<THRESHOLD_NOTE>>": pack["threshold_note"],
+        "<<COMPLIANCE>>": pack["compliance_note"],
+        "<<PRICING>>": pack["pricing_note"],
+        "<<DIFFERENT>>": pack["what_makes_it_different"],
+    }
+
+
+def specialise(obj, tok):
+    """Walk the built document and swap every <<TOKEN>> for this pack's value."""
+    if isinstance(obj, str):
+        for k, v in tok.items():
+            if k in obj:
+                obj = obj.replace(k, v)
+        return obj
+    if isinstance(obj, list):
+        return [specialise(x, tok) for x in obj]
+    if isinstance(obj, dict):
+        # Keys matter too: `connections` is keyed by node name, so a key left
+        # un-substituted points at a node that no longer exists under that name —
+        # and n8n drops such an entry silently rather than complaining.
+        return {specialise(k, tok): specialise(v, tok) for k, v in obj.items()}
+    return obj
+
+
 # =====================================================================
 # W1 — Enquiry intake and triage
 # =====================================================================
-def build_w1():
-    wf = WF("W1 · Enquiry intake and triage",
-            "Any inbound enquiry becomes one structured job record, or is refused with a reason.")
+def build_w1(pack):
+    wf = WF("W1 · <<ENQUIRY_CAP>> intake and triage — <<LABEL>>",
+            "Any inbound <<ENQUIRY>> becomes one structured record, or is refused with a reason.")
 
     wf.sticky(
-        "## W1 — Enquiry intake and triage\n\n"
+        "## W1 — <<ENQUIRY_CAP>> intake · <<LABEL>>\n\n"
         "**Boundary decision: fully automated.**\n"
-        "Variance low-ish, consequence low (a misfiled enquiry surfaces in the queue), "
+        "Variance low-ish, consequence low (a misfiling surfaces in the queue), "
         "input short. Scored 2/1/2 on variance / consequence / data-availability.\n\n"
-        "**Except one case.** A safety emergency must leave the automated path immediately. "
+        "**Except one case.** An emergency must leave the automated path immediately. "
         "That branch is the red note below — if it ever stops working, that is not a bug "
         "report, it is a finding for your results chapter.\n\n"
         "### Before you run this\n"
@@ -186,19 +255,21 @@ def build_w1():
         "2. Open the three **Google Sheets** nodes and set the document ID.\n"
         "3. Replace `REPLACE_WITH_YOUR_SPREADSHEET_ID` throughout.\n\n"
         "### Test it\n"
-        "Paste each record from `sample-data/enquiries.json` into the form. "
-        "ENQ-006 must be refused. ENQ-011 must escalate. ENQ-008 must be out of area.",
+        "Paste each record from this pack's `enquiries.json` into the form. Every file has a "
+        "record that must be refused, one that must escalate, and one out-of-area case — "
+        "each says so in its `notes_for_testing`.\n\n"
+        "### What is different about this industry\n<<DIFFERENT>>",
         (-820, -420), 520, 560, C_INTRO)
 
     trg = wf.node("Enquiry form", FORM_TRIGGER, {
         "authentication": "none",
-        "formTitle": "Request a quote",
-        "formDescription": "Tell us what you need. We reply within one business day.",
+        "formTitle": "Request a <<QUOTE>>",
+        "formDescription": "Tell us what you need and we will reply within one business day.",
         "formFields": {"values": [
             {"fieldLabel": "Your name", "fieldName": "customer_name", "fieldType": "text", "requiredField": True},
             {"fieldLabel": "Email", "fieldName": "email", "fieldType": "email", "requiredField": True},
             {"fieldLabel": "Phone", "fieldName": "phone", "fieldType": "text", "requiredField": False},
-            {"fieldLabel": "Address of the work", "fieldName": "address", "fieldType": "text", "requiredField": False},
+            {"fieldLabel": "Where the work is", "fieldName": "address", "fieldType": "text", "requiredField": False},
             {"fieldLabel": "What do you need?", "fieldName": "raw", "fieldType": "textarea", "requiredField": True},
         ]},
         "responseMode": "onReceived",
@@ -258,24 +329,21 @@ return items.map((item, i) => {
             "required": ["language", "urgency", "missing_fields", "extraction_confidence"],
         }, indent=2),
         "options": {"systemPromptTemplate": (
-            "You extract structured job data from enquiries to a small electrical contractor "
-            "in canton St. Gallen, Switzerland. Enquiries arrive in German or English and are "
-            "often incomplete.\n\n"
+            "You extract structured data from <<ENQUIRY>> messages sent to <<BUSINESS>> in "
+            "<<REGION>>. They arrive in German or English and are often incomplete.\n\n"
             "Never invent a value. If a field is not present, return null and name it in "
             "missing_fields. A plausible guess is worse than a null: a null gets asked about, "
             "a guess gets acted on.\n\n"
             "Keep described_scope in the language it was written in and set language accordingly.\n\n"
-            "urgency is about safety and consequence, not tone. A polite message describing a "
-            "burning smell is an emergency. An angry message about a dead towel rail is not. "
-            "Use 'emergency' for: burning smell, smoke, shock, exposed live parts, water near "
-            "electrics, or total loss of power where a vulnerable occupant is mentioned.\n\n"
-            "In service area: St. Gallen, Gossau, Wittenbach, Abtwil, Waldkirch, Rorschach, "
-            "Herisau, and localities within roughly 25km of St. Gallen. Out: everything else, "
-            "including Zurich, Winterthur, Chur. If a locality is stated but you do not "
-            "recognise it, return null rather than guessing — a wrong false loses a real job.\n\n"
+            "urgency is about consequence, not tone. A calm message can describe an emergency and "
+            "an angry one can describe something trivial. For this business, treat as an "
+            "emergency: <<EMERGENCY_DEF>>\n\n"
+            "Service area — <<AREA_NOTE>>\n"
+            "In: <<AREA_IN>>. Out: <<AREA_OUT>>. If a locality is stated but you do not "
+            "recognise it, return null rather than guessing — a wrong false loses real work.\n\n"
             "extraction_confidence is your honest estimate that a human reading the same text "
             "would extract the same fields. Do not inflate it.\n\n"
-            "If no actionable job is described at all, set job_type null and give a "
+            "If no actionable <<UNIT>> is described at all, set job_type null and give a "
             "disqualify_reason."
         )},
     }, (220, -180))
@@ -336,22 +404,22 @@ return [{ json: merged }];
     wf.sticky(
         "## The escalation branch\n\n"
         "This is the only unconditional exit from the automated path in W1.\n\n"
-        "A burning smell does not belong in a quoting pipeline. If your triage ever routes "
-        "one into the normal flow, **report it** — an automation that handles a safety call "
-        "as routine admin is exactly the kind of boundary failure the thesis is about.\n\n"
-        "Test with **ENQ-011**.",
+        "<<EMERGENCY_DEF>>\n\n"
+        "None of that belongs in a pricing pipeline. If your triage ever routes one into the "
+        "normal flow, **report it** — an automation that handles an emergency as routine admin "
+        "is exactly the kind of boundary failure this thesis is about.",
         (940, -480), 380, 240, C_GATE)
 
     alert = wf.node("Alert owner immediately", EMAIL, {
         "operation": "send",
         "fromEmail": "workflow@example.ch",
         "toEmail": "owner@example.ch",
-        "subject": "=SAFETY — {{ $json.customer_name || 'unknown caller' }} — call now",
+        "subject": "=URGENT — {{ $json.customer_name || 'unknown contact' }} — call now",
         "emailFormat": "html",
-        "html": "=<p><strong>Possible safety emergency. Automated handling stopped.</strong></p>"
+        "html": "=<p><strong>Possible emergency. Automated handling stopped.</strong></p>"
                 "<p><strong>Contact:</strong> {{ $json.phone || $json.email || 'NONE SUPPLIED' }}</p>"
                 "<p><strong>They wrote:</strong></p><blockquote>{{ $json.raw }}</blockquote>"
-                "<p>Job {{ $json.job_id }} received {{ $json.created_at }}.</p>",
+                "<p>Record {{ $json.job_id }} received {{ $json.created_at }}.</p>",
         "options": {},
     }, (960, -280))
 
@@ -387,9 +455,9 @@ return [{ json: merged }];
         "subject": "About your enquiry",
         "emailFormat": "html",
         "html": "=<p>Hallo {{ $json.customer_name || '' }},</p>"
-                "<p>Thanks for getting in touch. {{ $json.locality }} is outside the area we "
-                "cover, so we are not able to take this on — we did not want to leave you "
-                "waiting on a reply.</p><p>Best of luck with it.</p>",
+                "<p>Thanks for getting in touch. {{ $json.locality }} is outside the area we cover, "
+                "so we are not able to take this on — we did not want to leave you waiting "
+                "on a reply.</p><p>Best of luck with it.</p>",
         "options": {},
     }, (1240, 40))
 
@@ -442,23 +510,23 @@ return [{
     wf.wire(save, logprep)
     wf.wire(logprep, log)
 
-    return wf.dump("01-enquiry-intake.json")
+    return wf.dump("01-enquiry-intake.json", pack)
 
 
 # =====================================================================
 # W3 — Quote drafting  (the centre of the thesis)
 # =====================================================================
-def build_w3():
-    wf = WF("W3 · Quote drafting",
-            "Site-visit notes become a priced draft. A human approves every one, always.")
+def build_w3(pack):
+    wf = WF("W3 · <<QUOTE_CAP>> drafting — <<LABEL>>",
+            "<<VISIT_CAP>> notes become a priced draft. A human approves every one, always.")
 
     wf.sticky(
-        "## W3 — Quote drafting\n\n"
+        "## W3 — <<QUOTE_CAP>> drafting · <<LABEL>>\n\n"
         "**Boundary decision: draft-and-review, unconditional.**\n"
-        "Variance high (every job differs), consequence high (a wrong price is money out "
-        "of the owner's pocket), and a sent quote cannot be withdrawn. Scored 5/5/3.\n\n"
+        "Variance high (every <<UNIT>> differs), consequence high (a wrong price is money out "
+        "of the owner's pocket), and a sent <<QUOTE>> cannot be withdrawn. Scored 5/5/3.\n\n"
         "The system assembles. The owner decides. There is no value threshold below which "
-        "this gate is skipped — a cheap job quoted wrong still costs trust.\n\n"
+        "this gate is skipped — a cheap <<UNIT>> priced wrong still costs trust.\n\n"
         "### Why this workflow is the thesis\n"
         "Everything measurable and interesting is here: what the model gets right, what it "
         "gets wrong, how long review takes against writing from scratch, and whether review "
@@ -466,20 +534,20 @@ def build_w3():
         "If you instrument nothing else properly, instrument this.",
         (-880, -520), 540, 520, C_INTRO)
 
-    trg = wf.node("Site visit complete", WEBHOOK, {
+    trg = wf.node("<<VISIT_CAP>> complete", WEBHOOK, {
         "path": "visit-complete",
         "httpMethod": "POST",
         "responseMode": "lastNode",
         "options": {},
     }, (-300, -140), webhookId=nid())
 
-    rate = wf.node("Load rate card", SHEETS, {
+    rate = wf.node("Load price list", SHEETS, {
         "documentId": {"__rl": True, "mode": "id", "value": SHEET_ID},
-        "sheetName": {"__rl": True, "mode": "name", "value": "rate_card"},
+        "sheetName": {"__rl": True, "mode": "name", "value": "price_list"},
         "options": {},
     }, (-80, -280))
 
-    hist = wf.node("Load past jobs", SHEETS, {
+    hist = wf.node("Load past work", SHEETS, {
         "documentId": {"__rl": True, "mode": "id", "value": SHEET_ID},
         "sheetName": {"__rl": True, "mode": "name", "value": "historical_jobs"},
         "options": {},
@@ -493,9 +561,9 @@ def build_w3():
 // a lookup. Adding embeddings here would add a dependency, a cost line and a failure
 // mode in exchange for nothing measurable at this scale. If your business has 5,000 past
 // jobs, revisit it, and say so in the limitations.
-const visit = $('Site visit complete').first().json.body ?? $('Site visit complete').first().json;
-const rateCard = $('Load rate card').all().map(i => i.json);
-const past     = $('Load past jobs').all().map(i => i.json);
+const visit = $('<<VISIT_CAP>> complete').first().json.body ?? $('<<VISIT_CAP>> complete').first().json;
+const rateCard = $('Load price list').all().map(i => i.json);
+const past     = $('Load past work').all().map(i => i.json);
 
 const stop = new Set(['the','and','for','with','new','all','job','from','into','out','per']);
 const tokens = (s) => String(s ?? '').toLowerCase().match(/[a-zà-ÿ]{3,}/g)?.filter(t => !stop.has(t)) ?? [];
@@ -530,36 +598,34 @@ return [{
 
     chain = wf.node("Draft the quote", LLM_CHAIN, {
         "promptType": "define",
-        "text": "=Draft a quote from this site visit.\n\n"
+        "text": "=Draft a <<QUOTE>> from this <<VISIT>>.\n\n"
                 "JOB TYPE: {{ $json.job_type }}\n"
                 "LOCALITY: {{ $json.locality }}\n\n"
-                "VISIT NOTES:\n{{ $json.visit_notes }}\n\n"
-                "RATE CARD (csv):\n{{ $json.rate_card_csv }}\n\n"
-                "THREE MOST SIMILAR COMPLETED JOBS:\n{{ JSON.stringify($json.similar_jobs, null, 2) }}",
+                "NOTES FROM THE <<VISIT>>:\n{{ $json.visit_notes }}\n\n"
+                "PRICE LIST (csv):\n{{ $json.rate_card_csv }}\n\n"
+                "THREE MOST SIMILAR COMPLETED <<JOB>>S:\n{{ JSON.stringify($json.similar_jobs, null, 2) }}",
         "messages": {"messageValues": [{"message": (
-            "You draft electrical quotes for a small contractor in canton St. Gallen. Your "
-            "output is REVIEWED AND CORRECTED by the owner before anything is sent. Draft "
-            "accordingly: it is far better to flag uncertainty than to look confident.\n\n"
+            "You draft <<QUOTE>>s for <<BUSINESS>> in <<REGION>>. Your output is REVIEWED AND "
+            "CORRECTED by a person before anything is sent. Draft accordingly: it is far "
+            "better to flag uncertainty than to look confident.\n\n"
             "RULES\n"
-            "1. Every line item must use a code from the rate card. If work is needed that "
+            "1. Every line item must use a code from the price list. If work is needed that "
             "has no code, put it in unpriced_items with a description. Never invent a code "
             "or a rate — that is the most expensive mistake available to you.\n"
             "2. Surface every assumption. Anything you inferred rather than read — cable "
             "runs, wall construction, access, spare ways in the board — goes in assumptions. "
             "The owner scans that list first to catch you being wrong.\n"
-            "3. Use the similar jobs as a sanity check, not a template. If your total differs "
+            "3. Use the similar past work as a sanity check, not a template. If your total differs "
             "from a comparable job by more than 30%, say so in flags and explain why. Do not "
             "quietly adjust to match.\n"
             "4. Optional scope stays optional: mark those lines optional true, never folded "
             "into the main total.\n"
             "5. No discounts. Pricing strategy is the owner's decision, not yours.\n"
-            "6. State exclusions. Groundwork, making good, scaffolding, permits and disposal "
-            "are commonly assumed by customers and commonly not quoted.\n\n"
-            "PRICING\n"
-            "Labour: estimate hours per task, LAB-JRN unless out-of-hours is stated.\n"
-            "Materials: quantity x rate, then apply the MRK-MAT markup to material lines only.\n"
-            "Compliance: new installations require CRT-SNC. Do not omit it.\n"
-            "VAT: 8.1% of subtotal. Round line totals to 0.05 CHF, the total to 1 CHF."
+            "6. State exclusions. There are always things a customer assumes are included and "
+            "that are not. Name them.\n\n"
+            "HOW PRICING WORKS HERE\n<<PRICING>>\n\n"
+            "COMPLIANCE\n<<COMPLIANCE>> Do not omit it.\n\n"
+            "VAT: <<VAT>>% of subtotal. Round line totals to 0.05 <<CUR>>, the total to 1 <<CUR>>."
         )}]},
         "hasOutputParser": True,
         "batching": {},
@@ -601,7 +667,7 @@ return [{
 // code and counted — not left to the reviewer to spot. Every one of these findings is a
 // row in your results chapter.
 const draft = $json.output ?? $json;
-const rateCard = $('Load rate card').all().map(i => i.json);
+const rateCard = $('Load price list').all().map(i => i.json);
 const codes = new Set(rateCard.map(r => r.code));
 
 const invented = [];
@@ -694,15 +760,15 @@ return [{
         "operation": "send",
         "fromEmail": "workflow@example.ch",
         "toEmail": "owner@example.ch",
-        "subject": "=Quote draft ready — {{ $json.job_id }} — CHF {{ $json.total_chf }}",
+        "subject": "=<<QUOTE_CAP>> draft ready — {{ $json.job_id }} — <<CUR>> {{ $json.total_chf }}",
         "emailFormat": "html",
         "html": "=<p>Draft for <strong>{{ $json.job_id }}</strong> "
                 "({{ $json.job_type }}, {{ $json.locality }}).</p>"
-                "<p><strong>Total: CHF {{ $json.total_chf }}</strong> · "
+                "<p><strong>Total: <<CUR>> {{ $json.total_chf }}</strong> · "
                 "model confidence {{ $json.confidence }}</p>"
                 "{{ $json.needs_attention ? '<p style=\\\"color:#b00\\\"><strong>Needs attention:</strong> '"
                 " + $json.invented_code_count + ' unrecognised rate code(s), '"
-                " + 'subtotal drift CHF ' + $json.subtotal_drift_chf + '</p>' : '' }}"
+                " + 'subtotal drift <<CUR>> ' + $json.subtotal_drift_chf + '</p>' : '' }}"
                 "<h4>Assumptions the draft made</h4>"
                 "<ul>{{ $json.drafted.assumptions.map(a => '<li>' + a + '</li>').join('') }}</ul>"
                 "<h4>Excluded</h4>"
@@ -803,22 +869,22 @@ return [{
     wf.wire(gate, diff)
     wf.wire(diff, measure)
 
-    return wf.dump("03-quote-drafting.json")
+    return wf.dump("03-quote-drafting.json", pack)
 
 
 # =====================================================================
 # W2 — Site-visit scheduling
 # =====================================================================
-def build_w2():
-    wf = WF("W2 · Site-visit scheduling",
-            "Qualified jobs get slots clustered by geography, so travel stops being invisible.")
+def build_w2(pack):
+    wf = WF("W2 · <<VISIT_CAP>> booking — <<LABEL>>",
+            "Qualified work gets slots clustered by locality, so travel stops being invisible.")
 
     wf.sticky(
-        "## W2 — Site-visit scheduling\n\n"
-        "**Boundary: automated proposal, human confirm above a value threshold.**\n"
-        "Consequence scales with job value, so the gate does too. Scored 3/2/4.\n\n"
+        "## W2 — <<VISIT_CAP>> booking · <<LABEL>>\n\n"
+        "**Boundary: automated proposal, human confirm above <<CUR>> <<THRESHOLD>>.**\n"
+        "<<THRESHOLD_NOTE>> Scored 3/2/4.\n\n"
         "### The measurable thing here is travel\n"
-        "Clustering visits by locality is the whole point. Travel minutes per job, before "
+        "Clustering by locality is the whole point. Travel minutes per <<UNIT>>, before "
         "and after, is unambiguous and it converts directly to money — the easiest result "
         "in the whole project to defend.\n\n"
         "Record the unclustered estimate too, or you have nothing to compare against. "
@@ -829,7 +895,7 @@ def build_w2():
         "rule": {"interval": [{"field": "cronExpression", "expression": "0 7 * * 1-5"}]}
     }, (-280, -120))
 
-    fetch = wf.node("Get jobs awaiting a visit", SHEETS, {
+    fetch = wf.node("Get work awaiting <<VISIT>>", SHEETS, {
         "documentId": {"__rl": True, "mode": "id", "value": SHEET_ID},
         "sheetName": {"__rl": True, "mode": "name", "value": "jobs"},
         "filtersUI": {"values": [{"lookupColumn": "state", "lookupValue": "qualified"}]},
@@ -853,7 +919,7 @@ const MINUTES_FROM_DEPOT = {
 const DEFAULT_MINUTES = 30;
 
 const jobs = items.map(i => i.json).filter(j => j.job_id);
-const HIGH_VALUE_CHF = 5000;
+const HIGH_VALUE = <<THRESHOLD>>;
 
 const byLocality = {};
 for (const j of jobs) {
@@ -890,7 +956,7 @@ for (const [loc, group] of Object.entries(byLocality)) {
         travel_minutes_clustered: Math.round(clustered / group.length),
         travel_minutes_saved: Math.round((unclustered - clustered) / group.length),
         estimated_value_chf: Number(j.estimated_value_chf ?? 0),
-        needs_owner_confirmation: Number(j.estimated_value_chf ?? 0) >= HIGH_VALUE_CHF,
+        needs_owner_confirmation: Number(j.estimated_value_chf ?? 0) >= HIGH_VALUE,
       },
     });
   });
@@ -905,21 +971,21 @@ return out;
 
     ask = wf.node("Ask owner to confirm", EMAIL, {
         "operation": "send", "fromEmail": "workflow@example.ch", "toEmail": "owner@example.ch",
-        "subject": "=Confirm site visit — {{ $json.job_id }} — est. CHF {{ $json.estimated_value_chf }}",
+        "subject": "=Confirm <<VISIT>> — {{ $json.job_id }} — est. <<CUR>> {{ $json.estimated_value_chf }}",
         "emailFormat": "html",
         "html": "=<p>Proposed: <strong>{{ $json.proposed_slot }}</strong> for "
                 "{{ $json.customer_name }} in {{ $json.locality }}.</p>"
                 "<p>Clustered with: {{ $json.clustered_with || 'nothing — single trip' }}</p>"
-                "<p>Above the CHF 5000 threshold, so this one is yours to confirm.</p>",
+                "<p>Above the <<CUR>> <<THRESHOLD>> threshold, so this one is yours to confirm.</p>",
         "options": {},
     }, (660, -280))
 
     offer = wf.node("Offer slot to customer", EMAIL, {
         "operation": "send", "fromEmail": "workflow@example.ch", "toEmail": "={{ $json.email }}",
-        "subject": "A time to come and look at the work",
+        "subject": "A time for your <<VISIT>>",
         "emailFormat": "html",
         "html": "=<p>Hallo {{ $json.customer_name }},</p>"
-                "<p>We can come out on <strong>{{ $json.proposed_slot }}</strong>. "
+                "<p>We can do <strong>{{ $json.proposed_slot }}</strong>. "
                 "Reply to this email if that does not suit and we will find another time.</p>",
         "options": {},
     }, (660, 40))
@@ -938,23 +1004,23 @@ return out;
     wf.wire(gate, offer, out=1)
     wf.wire(ask, rec)
     wf.wire(offer, rec)
-    return wf.dump("02-site-visit-scheduling.json")
+    return wf.dump("02-booking.json", pack)
 
 
 # =====================================================================
 # W4 — Quote follow-up
 # =====================================================================
-def build_w4():
-    wf = WF("W4 · Quote follow-up",
+def build_w4(pack):
+    wf = WF("W4 · Follow-up — <<LABEL>>",
             "Three nudges, then stop. Never talks over a live conversation.")
 
     wf.sticky(
-        "## W4 — Quote follow-up\n\n"
+        "## W4 — Follow-up · <<LABEL>>\n\n"
         "**Boundary: automated, with a hard stop the moment a human replies.**\n"
         "Low consequence per message, but the failure mode is reputational and compounding, "
         "so the stop condition is absolute rather than probabilistic. Scored 2/3/5.\n\n"
         "### Three touches. Ever.\n"
-        "Day 3, day 7, day 14, then the job escalates to the owner and the sequence ends. "
+        "Day 3, day 7, day 14, then it escalates to the owner and the sequence ends. "
         "A fourth automated message is not follow-up, it is harassment — and in a town this "
         "size the business cannot afford it.\n\n"
         "### Confound warning\n"
@@ -967,7 +1033,7 @@ def build_w4():
         "rule": {"interval": [{"field": "cronExpression", "expression": "0 8 * * *"}]}
     }, (-300, -100))
 
-    fetch = wf.node("Get open quotes", SHEETS, {
+    fetch = wf.node("Get open <<QUOTE>>s", SHEETS, {
         "documentId": {"__rl": True, "mode": "id", "value": SHEET_ID},
         "sheetName": {"__rl": True, "mode": "name", "value": "quotes_sent"},
         "filtersUI": {"values": [{"lookupColumn": "decision", "lookupValue": ""}]},
@@ -1023,12 +1089,12 @@ return out;
         "promptType": "define",
         "text": "=Write follow-up touch {{ $json.touch_number }}.\n\n"
                 "Language: {{ $json.language }}\nCustomer: {{ $json.customer_name }}\n"
-                "Job: {{ $json.described_scope }}\nQuote total: CHF {{ $json.total_chf }}\n"
+                "Job: {{ $json.described_scope }}\n<<QUOTE_CAP>> total: <<CUR>> {{ $json.total_chf }}\n"
                 "Sent: {{ $json.sent_at }} ({{ $json.days_since_sent }} days ago)\n"
                 "Stance for this touch: {{ $json.stance }}",
         "messages": {"messageValues": [{"message": (
-            "You write short follow-up messages chasing an unanswered quote for a small "
-            "electrical contractor in canton St. Gallen.\n\n"
+            "You write short follow-up messages chasing an unanswered <<QUOTE>> for <<BUSINESS>> "
+            "in <<REGION>>.\n\n"
             "Write in the customer's language. German uses Sie.\n\n"
             "No pressure tactics: no fake scarcity, no invented deadlines, no last chance. "
             "A small contractor's reputation in a town this size is the entire business.\n\n"
@@ -1046,7 +1112,7 @@ return out;
     send = wf.node("Send follow-up", EMAIL, {
         "operation": "send", "fromEmail": "workflow@example.ch",
         "toEmail": "={{ $('Which touch is due').item.json.email }}",
-        "subject": "=Re: your quote — {{ $('Which touch is due').item.json.job_id }}",
+        "subject": "=Re: your <<QUOTE>> — {{ $('Which touch is due').item.json.job_id }}",
         "emailFormat": "text",
         "text": "={{ $json.text }}",
         "options": {},
@@ -1069,47 +1135,47 @@ return out;
     wf.wire(guard, stop, out=1)
     wf.wire(compose, send)
     wf.wire(send, logsent)
-    return wf.dump("04-quote-followup.json")
+    return wf.dump("04-follow-up.json", pack)
 
 
 # =====================================================================
 # W5 — Completion to cash
 # =====================================================================
-def build_w5():
-    wf = WF("W5 · Completion to cash",
-            "Invoice issues itself only when it matches what the customer agreed.")
+def build_w5(pack):
+    wf = WF("W5 · Completion to cash — <<LABEL>>",
+            "Invoice issues itself only when it matches what was agreed.")
 
     wf.sticky(
-        "## W5 — Completion to cash\n\n"
+        "## W5 — Completion to cash · <<LABEL>>\n\n"
         "**Boundary: automatic issue only when the invoice matches the approved quote "
         "exactly. Any variation goes to a human.**\n"
-        "The test is not job size, it is whether the amount differs from what the customer "
-        "agreed to. Scored 3/4/4.\n\n"
+        "The test is not size, it is whether the amount differs from what was agreed. "
+        "Scored 3/4/4.\n\n"
         "### Two lags, both worth measuring\n"
         "`completion → invoice` is the one automation moves, often dramatically — the "
         "person who finishes the job is not the person who invoices, and that handover is "
         "where days disappear.\n\n"
         "`invoice → paid` mostly is not yours to move. Report both and be honest about "
         "which one you affected.\n\n"
-        "In the sample data 28% of jobs carried a variation. If your business is similar, "
-        "the human gate fires on roughly one job in four — which is the number that tells "
-        "you whether this workflow is worth its complexity.",
+        "If roughly a quarter of your work carries a variation, the gate fires on one in four "
+        "— and that rate is the number that tells you whether this workflow is worth its "
+        "complexity.",
         (-860, -400), 500, 460, C_INTRO)
 
-    trg = wf.node("Job marked complete", WEBHOOK, {
+    trg = wf.node("<<JOB_CAP>> marked complete", WEBHOOK, {
         "path": "job-complete", "httpMethod": "POST",
         "responseMode": "lastNode", "options": {},
     }, (-320, -100), webhookId=nid())
 
-    approved = wf.node("Load approved quote", SHEETS, {
+    approved = wf.node("Load approved <<QUOTE>>", SHEETS, {
         "documentId": {"__rl": True, "mode": "id", "value": SHEET_ID},
         "sheetName": {"__rl": True, "mode": "name", "value": "quote_reviews"},
         "options": {},
     }, (-100, -100))
 
     compare = wf.node("Compare to what was agreed", CODE, {"jsCode": '''
-const body = $('Job marked complete').first().json.body ?? $('Job marked complete').first().json;
-const rows = $('Load approved quote').all().map(i => i.json);
+const body = $('<<JOB_CAP>> marked complete').first().json.body ?? $('<<JOB_CAP>> marked complete').first().json;
+const rows = $('Load approved <<QUOTE>>').all().map(i => i.json);
 const quote = rows.find(r => r.job_id === body.job_id);
 
 const variations = Array.isArray(body.variations) ? body.variations : [];
@@ -1138,16 +1204,16 @@ return [{
 }];
 '''.strip()}, (140, -100))
 
-    gate = wf.node("Matches the agreed quote?", IF,
+    gate = wf.node("Matches what was agreed?", IF,
                    if_params("={{ $json.matches_agreed }}", op_true()), (380, -100))
 
     issue = wf.node("Issue invoice", EMAIL, {
         "operation": "send", "fromEmail": "workflow@example.ch", "toEmail": "={{ $json.email }}",
-        "subject": "=Invoice — {{ $json.job_id }} — CHF {{ $json.invoice_total_chf }}",
+        "subject": "=Invoice — {{ $json.job_id }} — <<CUR>> {{ $json.invoice_total_chf }}",
         "emailFormat": "html",
         "html": "=<p>Hallo {{ $json.customer_name }},</p>"
                 "<p>The work is complete. Invoice total "
-                "<strong>CHF {{ $json.invoice_total_chf }}</strong>, as quoted.</p>"
+                "<strong><<CUR>> {{ $json.invoice_total_chf }}</strong>, as agreed.</p>"
                 "<p>Payable within 30 days.</p>",
         "options": {},
     }, (620, -240))
@@ -1155,13 +1221,13 @@ return [{
     review = wf.node("Owner approves variation", EMAIL, {
         "operation": "send", "fromEmail": "workflow@example.ch", "toEmail": "owner@example.ch",
         "subject": "=Variation to approve — {{ $json.job_id }} — "
-                   "CHF {{ $json.variation_total_chf }} over quote",
+                   "<<CUR>> {{ $json.variation_total_chf }} over the <<QUOTE>>",
         "emailFormat": "html",
         "html": "=<p><strong>{{ $json.job_id }}</strong> finished at a different number "
-                "from the one the customer agreed.</p>"
-                "<p>Agreed: CHF {{ $json.agreed_total_chf }}<br>"
-                "Variations: CHF {{ $json.variation_total_chf }}<br>"
-                "<strong>Invoice would be: CHF {{ $json.invoice_total_chf }}</strong></p>"
+                "from the one that was agreed.</p>"
+                "<p>Agreed: <<CUR>> {{ $json.agreed_total_chf }}<br>"
+                "Variations: <<CUR>> {{ $json.variation_total_chf }}<br>"
+                "<strong>Invoice would be: <<CUR>> {{ $json.invoice_total_chf }}</strong></p>"
                 "<p>{{ $json.variation_summary }}</p>"
                 "<p>Nothing has been sent. Send it yourself once you are happy.</p>",
         "options": {},
@@ -1188,9 +1254,14 @@ return [{ json: { ...$json, invoiced_at: new Date().toISOString(),
     wf.wire(issue, stamp)
     wf.wire(review, stamp)
     wf.wire(stamp, rec)
-    return wf.dump("05-completion-to-cash.json")
+    return wf.dump("05-completion-to-cash.json", pack)
 
 
 if __name__ == "__main__":
-    for fn in (build_w1, build_w2, build_w3, build_w4, build_w5):
-        print("wrote", fn().name)
+    packs = load_packs()
+    total = 0
+    for pack in packs:
+        made = [fn(pack) for fn in (build_w1, build_w2, build_w3, build_w4, build_w5)]
+        total += len(made)
+        print(f"{pack['slug']:<10} {pack['label']:<32} {len(made)} workflows")
+    print(f"\n{total} workflow files across {len(packs)} industries")

@@ -1,0 +1,365 @@
+{
+  "name": "W2 \u00b7 Initial assessment booking \u2014 Physiotherapy practice",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## W2 \u2014 Initial assessment booking \u00b7 Physiotherapy practice\n\n**Boundary: automated proposal, human confirm above CHF 1000.**\nA standard prescribed series of nine sessions comes to roughly CHF 900 to 1,200 depending on session length and whether the payer is an insurer or the patient, so CHF 1,000 is the point at which an enquiry stops being a routine single series and becomes an extended or combined programme that a therapist should confirm before anything priced is sent out. Scored 3/2/4.\n\n### The measurable thing here is travel\nClustering by locality is the whole point. Travel minutes per course of treatment, before and after, is unambiguous and it converts directly to money \u2014 the easiest result in the whole project to defend.\n\nRecord the unclustered estimate too, or you have nothing to compare against. The **Cluster by locality** node writes both.",
+        "width": 480,
+        "height": 380,
+        "color": 5
+      },
+      "id": "aae36f08-034a-412e-91b6-6e6ceb759383",
+      "name": "Note 1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -820,
+        -360
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 7 * * 1-5"
+            }
+          ]
+        }
+      },
+      "id": "c1e34f36-7f28-4790-90ed-42eab054b2a1",
+      "name": "Every weekday 07:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -280,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "REPLACE_WITH_YOUR_SPREADSHEET_ID"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "jobs"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "state",
+              "lookupValue": "qualified"
+            }
+          ]
+        },
+        "combineFilters": "AND",
+        "options": {}
+      },
+      "id": "404c4972-0fc4-46e6-83f4-9fe24407d780",
+      "name": "Get work awaiting initial assessment",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -60,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Group the week's visits by locality so one trip covers several jobs.\n//\n// The travel model is a flat per-locality estimate, not a routing API. That is a\n// deliberate limitation: a real distance matrix would give better numbers but the\n// comparison here is between clustered and unclustered under the SAME model, so the\n// saving is valid even though the absolute minutes are approximate. Say exactly this\n// in your limitations section \u2014 it is a defensible simplification, not a shortcut.\nconst DEPOT = 'St. Gallen';\nconst MINUTES_FROM_DEPOT = {\n  'St. Gallen': 8, 'Wittenbach': 12, 'Abtwil': 14, 'Gossau': 18,\n  'Herisau': 22, 'Waldkirch': 20, 'Rorschach': 24,\n};\nconst DEFAULT_MINUTES = 30;\n\nconst jobs = items.map(i => i.json).filter(j => j.job_id);\nconst HIGH_VALUE = 1000;\n\nconst byLocality = {};\nfor (const j of jobs) {\n  const loc = j.locality || 'unknown';\n  (byLocality[loc] ??= []).push(j);\n}\n\nconst out = [];\nlet slotDay = 1;\n\nfor (const [loc, group] of Object.entries(byLocality)) {\n  const legMinutes = MINUTES_FROM_DEPOT[loc] ?? DEFAULT_MINUTES;\n\n  // Unclustered: every job is its own return trip from the depot.\n  const unclustered = legMinutes * 2 * group.length;\n  // Clustered: one trip out, one back, short hops between jobs in the same locality.\n  const clustered = legMinutes * 2 + Math.max(0, group.length - 1) * 6;\n\n  group.forEach((j, idx) => {\n    const d = new Date();\n    d.setDate(d.getDate() + slotDay);\n    d.setHours(8 + idx * 2, 0, 0, 0);\n\n    out.push({\n      json: {\n        job_id: j.job_id,\n        customer_name: j.customer_name,\n        email: j.email,\n        locality: loc,\n        cluster_size: group.length,\n        clustered_with: group.filter(g => g.job_id !== j.job_id).map(g => g.job_id).join(' '),\n        proposed_slot: d.toISOString(),\n        travel_minutes_unclustered: Math.round(unclustered / group.length),\n        travel_minutes_clustered: Math.round(clustered / group.length),\n        travel_minutes_saved: Math.round((unclustered - clustered) / group.length),\n        estimated_value_chf: Number(j.estimated_value_chf ?? 0),\n        needs_owner_confirmation: Number(j.estimated_value_chf ?? 0) >= HIGH_VALUE,\n      },\n    });\n  });\n  slotDay++;\n}\n\nreturn out;"
+      },
+      "id": "9c8e5d83-b6ec-4b19-9c93-14db36aaf832",
+      "name": "Cluster by locality",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        180,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "30f4bef2-76db-4c8e-9844-a1c5e3c15b12",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json.needs_owner_confirmation }}",
+              "rightValue": ""
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "f8ddfadc-f3f6-4818-84cb-c04ed5875393",
+      "name": "High value?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        420,
+        -120
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "fromEmail": "workflow@example.ch",
+        "toEmail": "owner@example.ch",
+        "subject": "=Confirm initial assessment \u2014 {{ $json.job_id }} \u2014 est. CHF {{ $json.estimated_value_chf }}",
+        "emailFormat": "html",
+        "html": "=<p>Proposed: <strong>{{ $json.proposed_slot }}</strong> for {{ $json.customer_name }} in {{ $json.locality }}.</p><p>Clustered with: {{ $json.clustered_with || 'nothing \u2014 single trip' }}</p><p>Above the CHF 1000 threshold, so this one is yours to confirm.</p>",
+        "options": {}
+      },
+      "id": "770e43d9-fb60-4d05-9046-35a15fbd648a",
+      "name": "Ask owner to confirm",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        660,
+        -280
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "fromEmail": "workflow@example.ch",
+        "toEmail": "={{ $json.email }}",
+        "subject": "A time for your initial assessment",
+        "emailFormat": "html",
+        "html": "=<p>Hallo {{ $json.customer_name }},</p><p>We can do <strong>{{ $json.proposed_slot }}</strong>. Reply to this email if that does not suit and we will find another time.</p>",
+        "options": {}
+      },
+      "id": "d3b52b55-8764-4ead-b146-32888b427d19",
+      "name": "Offer slot to customer",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        660,
+        40
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "REPLACE_WITH_YOUR_SPREADSHEET_ID"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "scheduling"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "job_id": "={{ $json.job_id }}",
+            "locality": "={{ $json.locality }}",
+            "cluster_size": "={{ $json.cluster_size }}",
+            "clustered_with": "={{ $json.clustered_with }}",
+            "proposed_slot": "={{ $json.proposed_slot }}",
+            "travel_minutes_unclustered": "={{ $json.travel_minutes_unclustered }}",
+            "travel_minutes_clustered": "={{ $json.travel_minutes_clustered }}",
+            "travel_minutes_saved": "={{ $json.travel_minutes_saved }}",
+            "needs_owner_confirmation": "={{ $json.needs_owner_confirmation }}"
+          },
+          "schema": [
+            {
+              "id": "job_id",
+              "displayName": "job_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "locality",
+              "displayName": "locality",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "cluster_size",
+              "displayName": "cluster_size",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "clustered_with",
+              "displayName": "clustered_with",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "proposed_slot",
+              "displayName": "proposed_slot",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "travel_minutes_unclustered",
+              "displayName": "travel_minutes_unclustered",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "travel_minutes_clustered",
+              "displayName": "travel_minutes_clustered",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "travel_minutes_saved",
+              "displayName": "travel_minutes_saved",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "needs_owner_confirmation",
+              "displayName": "needs_owner_confirmation",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "matchingColumns": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "id": "8d59023d-8256-4ce4-b88f-fc684fadce72",
+      "name": "Record travel figures",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        900,
+        -120
+      ]
+    }
+  ],
+  "connections": {
+    "Every weekday 07:00": {
+      "main": [
+        [
+          {
+            "node": "Get work awaiting initial assessment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get work awaiting initial assessment": {
+      "main": [
+        [
+          {
+            "node": "Cluster by locality",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cluster by locality": {
+      "main": [
+        [
+          {
+            "node": "High value?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "High value?": {
+      "main": [
+        [
+          {
+            "node": "Ask owner to confirm",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Offer slot to customer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ask owner to confirm": {
+      "main": [
+        [
+          {
+            "node": "Record travel figures",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Offer slot to customer": {
+      "main": [
+        [
+          {
+            "node": "Record travel figures",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "instanceId": ""
+  }
+}

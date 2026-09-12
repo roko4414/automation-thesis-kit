@@ -1,0 +1,58 @@
+{
+  "slug": "wellness",
+  "label": "Physiotherapy practice",
+  "business": "a physiotherapy and rehabilitation practice",
+  "region": "canton St. Gallen, Switzerland",
+  "currency": "CHF",
+  "vat_rate": 8.1,
+  "unit_of_work": "course of treatment",
+  "enquiry_word": "patient enquiry",
+  "visit_word": "initial assessment",
+  "quote_word": "treatment plan",
+  "job_word": "treatment series",
+  "job_types": [
+    "lower-back-pain",
+    "neck-and-shoulder-pain",
+    "post-operative-knee-rehab",
+    "post-operative-shoulder-rehab",
+    "sports-injury-rehab",
+    "manual-therapy",
+    "medical-training-therapy",
+    "gait-and-mobility-training",
+    "neurological-rehab",
+    "vestibular-rehab",
+    "lymphatic-drainage",
+    "pelvic-floor-therapy"
+  ],
+  "service_area": {
+    "in": [
+      "St. Gallen",
+      "Gossau SG",
+      "Wittenbach",
+      "Goldach",
+      "Rorschach",
+      "Flawil",
+      "Teufen AR",
+      "Herisau"
+    ],
+    "out": [
+      "Zurich",
+      "Basel",
+      "Chur",
+      "Lugano"
+    ],
+    "note": "Two different boundaries apply and the automation must not confuse them: patients who travel to the practice are never refused on distance, because how far they choose to come is their decision and not a qualifying criterion, whereas home visits are only offered inside the listed localities and a home-visit request from outside them is a scheduling refusal that must be answered with an in-practice alternative or a referral, not with a booking."
+  },
+  "emergency_definition": "An automated intake must not triage, score or book any enquiry that describes a possible medical emergency or a clinical red flag; these are handed to a named human immediately, and the automated reply says only that a person will make contact and that the patient should contact their doctor or the emergency services if symptoms are severe or worsening. Red-flag patterns that stop automation dead include suspected fracture or an unweightable limb after trauma, chest pain or pain with breathlessness, sudden or progressive neurological signs such as loss of bladder or bowel control, saddle-area numbness, spreading weakness or numbness, sudden severe headache, dizziness with visual or speech disturbance, signs of post-operative complication such as fever, a hot swollen calf, wound discharge or a wound that has opened, and unexplained night pain, fever or weight loss alongside new pain. The system must also stop on any enquiry it cannot confidently classify, because in this industry the cost of a false negative is not a lost booking but an untreated emergency, and the safe failure mode is always to escalate to a human rather than to guess.",
+  "urgency_examples": {
+    "emergency": "I hurt my back lifting on Saturday and since yesterday I can't really feel it when I go to the toilet and my left leg keeps giving way — can I come in tomorrow?",
+    "urgent": "I had my knee operated on nine days ago and the surgeon said physio should start this week, the clinic gave me a prescription but nobody has phoned me and I'm worried I'm losing time.",
+    "scheduled": "My GP has given me a prescription for nine sessions for my shoulder, no great hurry, could we start sometime in the next two or three weeks, preferably late afternoons.",
+    "no_rush": "I'm running the Säntis climb in September and would like to get some strengthening work done beforehand, whenever you have space over the summer."
+  },
+  "high_value_threshold_chf": 1000,
+  "threshold_note": "A standard prescribed series of nine sessions comes to roughly CHF 900 to 1,200 depending on session length and whether the payer is an insurer or the patient, so CHF 1,000 is the point at which an enquiry stops being a routine single series and becomes an extended or combined programme that a therapist should confirm before anything priced is sent out.",
+  "compliance_note": "Illustrative and not verified: under Swiss mandatory basic health insurance a physiotherapy series is normally only reimbursed on a doctor's written prescription, the prescription limits how many sessions are covered before it must be renewed, and accident cases usually run through the accident insurer rather than the health insurer — the practice must confirm the referral and the cover before treating on the assumption that somebody else is paying. Everything a patient writes about their symptoms is health data and therefore special-category personal data under the revised Swiss Federal Act on Data Protection and, for EU-resident patients, the GDPR, which means it must not be pasted into general-purpose tools, retained in spreadsheets or chat logs, or passed to an LLM endpoint without a specific lawful basis, a data-processing agreement and a documented retention limit; the customer-list handling that is adequate for a trade business is not adequate here.",
+  "pricing_note": "Illustrative: insurance-covered treatment is billed against the national physiotherapy tariff as a per-session flat rate plus defined supplements, so the practice does not set that price and cannot discount it, while self-pay work is billed at the practice's own per-session rate and is normally quoted as a block of sessions. Because the payer is frequently the health insurer or the accident insurer rather than the patient, the priced document splits in two — the patient sees a treatment plan describing what will happen and what, if anything, they will personally pay, and the invoice goes to a third party under its own reference and its own timetable — so a quote-to-invoice automation built on the assumption that the person who enquired is the person who pays will produce the wrong document for the wrong recipient.",
+  "what_makes_it_different": "In a trade business a mis-triaged enquiry costs a wasted visit; here the intake step is the point at which someone describing a possible cauda equina syndrome, a deep vein thrombosis or cardiac pain either reaches a clinician or gets an automated booking confirmation for next Tuesday, so the triage carries genuine safety consequence and the failure is not commercial but clinical. The commercial shape is also inverted, because the payer is usually an insurer working from a doctor's prescription with its own session limits, references and renewal points, which means the quote, the approval and the invoice have three different counterparties and the naive patient-equals-payer model produces documents that nobody can pay. Every message in this pipeline is special-category health data, so the ordinary reflex of piping raw enquiry text through a hosted LLM to extract fields is itself the compliance failure, before any clinical question arises. This is the industry in the kit where a naive automation is most likely to be actively harmful rather than merely wasteful, and that contrast is the reason for including it: the same five-workflow pattern that is defensible for a contractor has to be cut back to notification, routing and drafting here, with the clinical gate held closed and unconditional."
+}

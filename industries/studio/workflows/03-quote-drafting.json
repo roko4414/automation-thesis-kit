@@ -1,0 +1,704 @@
+{
+  "name": "W3 \u00b7 Proposal drafting \u2014 Photo & video studio",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## W3 \u2014 Proposal drafting \u00b7 Photo & video studio\n\n**Boundary decision: draft-and-review, unconditional.**\nVariance high (every shoot differs), consequence high (a wrong price is money out of the owner's pocket), and a sent proposal cannot be withdrawn. Scored 5/5/3.\n\nThe system assembles. The owner decides. There is no value threshold below which this gate is skipped \u2014 a cheap shoot priced wrong still costs trust.\n\n### Why this workflow is the thesis\nEverything measurable and interesting is here: what the model gets right, what it gets wrong, how long review takes against writing from scratch, and whether review time falls as the owner learns where to trust it.\n\nIf you instrument nothing else properly, instrument this.",
+        "width": 540,
+        "height": 520,
+        "color": 5
+      },
+      "id": "485ff3c9-5c00-4081-abfe-5929037e4966",
+      "name": "Note 1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -880,
+        -520
+      ]
+    },
+    {
+      "parameters": {
+        "path": "visit-complete",
+        "httpMethod": "POST",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "cb1d220f-e59e-4c19-ac9b-da69fa66e752",
+      "name": "Recce complete",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -300,
+        -140
+      ],
+      "webhookId": "43e7c4a3-ebad-4f6e-ad35-b54db7f46253"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "REPLACE_WITH_YOUR_SPREADSHEET_ID"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "price_list"
+        },
+        "options": {}
+      },
+      "id": "0d650cb4-93e5-48a8-ab33-e07dd6d48909",
+      "name": "Load price list",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -80,
+        -280
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "REPLACE_WITH_YOUR_SPREADSHEET_ID"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "historical_jobs"
+        },
+        "options": {}
+      },
+      "id": "492d28f1-1124-4dd3-89e7-55de8fafbf32",
+      "name": "Load past work",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -80,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Retrieval is deliberately crude: keyword overlap on job_type and scope text.\n//\n// That is a choice worth defending in the thesis rather than apologising for. A vector\n// store would retrieve better, but 25 historical jobs is not a retrieval problem \u2014 it is\n// a lookup. Adding embeddings here would add a dependency, a cost line and a failure\n// mode in exchange for nothing measurable at this scale. If your business has 5,000 past\n// jobs, revisit it, and say so in the limitations.\nconst visit = $('Recce complete').first().json.body ?? $('Recce complete').first().json;\nconst rateCard = $('Load price list').all().map(i => i.json);\nconst past     = $('Load past work').all().map(i => i.json);\n\nconst stop = new Set(['the','and','for','with','new','all','job','from','into','out','per']);\nconst tokens = (s) => String(s ?? '').toLowerCase().match(/[a-z\u00e0-\u00ff]{3,}/g)?.filter(t => !stop.has(t)) ?? [];\n\nconst wanted = new Set([...tokens(visit.job_type), ...tokens(visit.visit_notes)]);\n\nconst scored = past.map(j => {\n  const have = new Set([...tokens(j.job_type), ...tokens(j.scope_text)]);\n  let overlap = 0;\n  for (const t of wanted) if (have.has(t)) overlap++;\n  const typeMatch = (j.job_type ?? '') === (visit.job_type ?? '') ? 3 : 0;\n  return { job: j, score: overlap + typeMatch };\n}).filter(x => x.score > 0)\n  .sort((a, b) => b.score - a.score)\n  .slice(0, 3);\n\nreturn [{\n  json: {\n    job_id: visit.job_id,\n    visit_notes: visit.visit_notes ?? '',\n    job_type: visit.job_type ?? null,\n    locality: visit.locality ?? null,\n    language: visit.language ?? 'de',\n    rate_card_csv: [Object.keys(rateCard[0] ?? {}).join(',')]\n      .concat(rateCard.map(r => Object.values(r).join(','))).join('\\n'),\n    similar_jobs: scored.map(s => s.job),\n    similar_scores: scored.map(s => s.score),\n    retrieval_method: 'keyword-overlap-v1',\n  },\n}];"
+      },
+      "id": "365eba75-71a8-4a7e-9dd8-345afe8925f4",
+      "name": "Build pricing context",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        180,
+        -140
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Draft a proposal from this recce.\n\nJOB TYPE: {{ $json.job_type }}\nLOCALITY: {{ $json.locality }}\n\nNOTES FROM THE recce:\n{{ $json.visit_notes }}\n\nPRICE LIST (csv):\n{{ $json.rate_card_csv }}\n\nTHREE MOST SIMILAR COMPLETED productionS:\n{{ JSON.stringify($json.similar_jobs, null, 2) }}",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "You draft proposals for a small photography and video studio in canton St. Gallen, Switzerland. Your output is REVIEWED AND CORRECTED by a person before anything is sent. Draft accordingly: it is far better to flag uncertainty than to look confident.\n\nRULES\n1. Every line item must use a code from the price list. If work is needed that has no code, put it in unpriced_items with a description. Never invent a code or a rate \u2014 that is the most expensive mistake available to you.\n2. Surface every assumption. Anything you inferred rather than read \u2014 cable runs, wall construction, access, spare ways in the board \u2014 goes in assumptions. The owner scans that list first to catch you being wrong.\n3. Use the similar past work as a sanity check, not a template. If your total differs from a comparable job by more than 30%, say so in flags and explain why. Do not quietly adjust to match.\n4. Optional scope stays optional: mark those lines optional true, never folded into the main total.\n5. No discounts. Pricing strategy is the owner's decision, not yours.\n6. State exclusions. There are always things a customer assumes are included and that are not. Name them.\n\nHOW PRICING WORKS HERE\nPricing is built from day and half day rates plus packages, with post-production charged by the hour or per retouched image, travel and accommodation added at cost, and equipment or crew as separate lines. The part that breaks naive automation is the usage licence: the same one day shoot can be CHF 1,850 for the studio's own social media or CHF 8,000 with a Europe-wide advertising licence, so the price is driven by what the client will do with the images rather than by how long the shoot takes.\n\nCOMPLIANCE\nEvery proposal must state the usage licence being granted - media, territory and duration - and must name who is responsible for obtaining model releases from identifiable people and property or location releases from venue owners; the underlying Swiss position on personality rights in one's own image and on copyright in photographic works is summarised here as illustrative only and has not been legally verified. Do not omit it.\n\nVAT: 8.1% of subtotal. Round line totals to 0.05 CHF, the total to 1 CHF."
+            }
+          ]
+        },
+        "hasOutputParser": true,
+        "batching": {}
+      },
+      "id": "80ad5afc-4c6b-49b9-9804-d659d9534247",
+      "name": "Draft the quote",
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.7,
+      "position": [
+        420,
+        -140
+      ]
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "id",
+          "value": "claude-sonnet-4-5-20250929"
+        },
+        "options": {
+          "temperature": 0,
+          "maxTokensToSample": 4096
+        }
+      },
+      "id": "d271374a-ce4b-435c-8064-02deb1b57a05",
+      "name": "Claude \u2014 drafting",
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [
+        400,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"line_items\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"code\": {\n            \"type\": \"string\"\n          },\n          \"description\": {\n            \"type\": \"string\"\n          },\n          \"quantity\": {\n            \"type\": \"number\"\n          },\n          \"unit_rate_chf\": {\n            \"type\": \"number\"\n          },\n          \"line_total_chf\": {\n            \"type\": \"number\"\n          },\n          \"optional\": {\n            \"type\": \"boolean\"\n          }\n        },\n        \"required\": [\n          \"code\",\n          \"description\",\n          \"quantity\",\n          \"unit_rate_chf\",\n          \"line_total_chf\"\n        ]\n      }\n    },\n    \"unpriced_items\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"object\",\n        \"properties\": {\n          \"description\": {\n            \"type\": \"string\"\n          },\n          \"why\": {\n            \"type\": \"string\"\n          }\n        }\n      }\n    },\n    \"assumptions\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    },\n    \"exclusions\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    },\n    \"flags\": {\n      \"type\": \"array\",\n      \"items\": {\n        \"type\": \"string\"\n      }\n    },\n    \"subtotal_chf\": {\n      \"type\": \"number\"\n    },\n    \"vat_chf\": {\n      \"type\": \"number\"\n    },\n    \"total_chf\": {\n      \"type\": \"number\"\n    },\n    \"confidence\": {\n      \"type\": \"number\"\n    }\n  },\n  \"required\": [\n    \"line_items\",\n    \"assumptions\",\n    \"exclusions\",\n    \"subtotal_chf\",\n    \"vat_chf\",\n    \"total_chf\",\n    \"confidence\"\n  ]\n}"
+      },
+      "id": "70349f00-0e96-4a90-b9a9-a6b86c765ddf",
+      "name": "Quote shape",
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.2,
+      "position": [
+        620,
+        120
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Deterministic checks the model does not get a vote on.\n//\n// An invented rate code is the failure mode that costs real money, so it is caught in\n// code and counted \u2014 not left to the reviewer to spot. Every one of these findings is a\n// row in your results chapter.\nconst draft = $json.output ?? $json;\nconst rateCard = $('Load price list').all().map(i => i.json);\nconst codes = new Set(rateCard.map(r => r.code));\n\nconst invented = [];\nlet recomputed = 0;\n\nfor (const li of draft.line_items ?? []) {\n  if (!codes.has(li.code)) {\n    invented.push(li.code);\n    continue;\n  }\n  const card = rateCard.find(r => r.code === li.code);\n  const expected = Number(card.rate_chf) * Number(li.quantity);\n  // Flag arithmetic drift over 1 CHF. The model is not a calculator and should not be\n  // trusted as one; this is cheaper than asking it to show its working.\n  if (Math.abs(expected - Number(li.line_total_chf)) > 1 && !li.optional) {\n    li.arithmetic_warning = `expected ${expected.toFixed(2)} from rate card`;\n  }\n  if (!li.optional) recomputed += expected;\n}\n\nconst stated = Number(draft.subtotal_chf ?? 0);\nconst drift = Math.abs(recomputed - stated);\n\nreturn [{\n  json: {\n    ...$('Build pricing context').first().json,\n    drafted: draft,\n    validation: {\n      invented_codes: invented,\n      invented_code_count: invented.length,\n      subtotal_recomputed_chf: Number(recomputed.toFixed(2)),\n      subtotal_drift_chf: Number(drift.toFixed(2)),\n      // Any of these means the draft is unsafe to present without a warning banner.\n      needs_attention: invented.length > 0 || drift > 5 || (draft.confidence ?? 0) < 0.5,\n    },\n    drafted_at: new Date().toISOString(),\n    prompt_version: '1.0.0',\n    model: 'claude-sonnet-4-5',\n  },\n}];"
+      },
+      "id": "1188e12a-b832-4ae0-bdd4-7a143a9d3cc4",
+      "name": "Check against rate card",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        860,
+        -140
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "REPLACE_WITH_YOUR_SPREADSHEET_ID"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "quote_drafts"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "job_id": "={{ $json.job_id }}",
+            "drafted_at": "={{ $json.drafted_at }}",
+            "prompt_version": "={{ $json.prompt_version }}",
+            "model": "={{ $json.model }}",
+            "total_chf": "={{ $json.total_chf }}",
+            "confidence": "={{ $json.confidence }}",
+            "invented_code_count": "={{ $json.invented_code_count }}",
+            "subtotal_drift_chf": "={{ $json.subtotal_drift_chf }}",
+            "needs_attention": "={{ $json.needs_attention }}",
+            "draft_json": "={{ $json.draft_json }}"
+          },
+          "schema": [
+            {
+              "id": "job_id",
+              "displayName": "job_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "drafted_at",
+              "displayName": "drafted_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "prompt_version",
+              "displayName": "prompt_version",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "model",
+              "displayName": "model",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "total_chf",
+              "displayName": "total_chf",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "confidence",
+              "displayName": "confidence",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "invented_code_count",
+              "displayName": "invented_code_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "subtotal_drift_chf",
+              "displayName": "subtotal_drift_chf",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "needs_attention",
+              "displayName": "needs_attention",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "draft_json",
+              "displayName": "draft_json",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "matchingColumns": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "id": "f2cc7bc8-1129-491d-b73a-c7d9186cec7c",
+      "name": "Store draft",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1080,
+        -300
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const d = $json.drafted;\nreturn [{\n  json: {\n    ...$json,\n    total_chf: d.total_chf,\n    confidence: d.confidence,\n    invented_code_count: $json.validation.invented_code_count,\n    subtotal_drift_chf: $json.validation.subtotal_drift_chf,\n    needs_attention: $json.validation.needs_attention,\n    draft_json: JSON.stringify(d),\n    review_opened_at: new Date().toISOString(),\n  },\n}];"
+      },
+      "id": "33ed8757-a6c8-4456-b44e-6da855860b1b",
+      "name": "Prepare review",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1080,
+        -140
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## The gate\n\n**Wait \u2014 resume on webhook.** The workflow stops here until a human acts.\n\nThe review link is `{{ $execution.resumeUrl }}`, and it must be sent from the node **before** the Wait. Once execution pauses here, nothing downstream runs until someone opens that link \u2014 so an email placed after the gate would never arrive to tell anyone the gate existed.\n\nIn week 9 you replace this email with the Wippli review queue. The gate does not move; only its surface does. That is the point worth making in the write-up: the boundary is an architectural decision, the interface is an implementation detail.\n\n### Measure here\n`review_opened_at` to `review_approved_at` is review duration. Compare it against how long the owner took to write a quote from scratch during your baseline weeks. That single comparison is your headline number for this workflow.",
+        "width": 460,
+        "height": 400,
+        "color": 2
+      },
+      "id": "d585287e-10a4-4d47-8540-cf42c3bd5da5",
+      "name": "Note 2",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1300,
+        -560
+      ]
+    },
+    {
+      "parameters": {
+        "resume": "webhook",
+        "httpMethod": "GET",
+        "responseCode": 200,
+        "responseMode": "onReceived",
+        "options": {
+          "webhookSuffix": "approve"
+        }
+      },
+      "id": "c4d51216-dcf4-4e6b-8f6b-39fc8748c87f",
+      "name": "Await owner approval",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [
+        1540,
+        -140
+      ],
+      "webhookId": "cd2c2534-6e95-4e20-a23f-c70cb0e5b657"
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "fromEmail": "workflow@example.ch",
+        "toEmail": "owner@example.ch",
+        "subject": "=Proposal draft ready \u2014 {{ $json.job_id }} \u2014 CHF {{ $json.total_chf }}",
+        "emailFormat": "html",
+        "html": "=<p>Draft for <strong>{{ $json.job_id }}</strong> ({{ $json.job_type }}, {{ $json.locality }}).</p><p><strong>Total: CHF {{ $json.total_chf }}</strong> \u00b7 model confidence {{ $json.confidence }}</p>{{ $json.needs_attention ? '<p style=\\\"color:#b00\\\"><strong>Needs attention:</strong> ' + $json.invented_code_count + ' unrecognised rate code(s), ' + 'subtotal drift CHF ' + $json.subtotal_drift_chf + '</p>' : '' }}<h4>Assumptions the draft made</h4><ul>{{ $json.drafted.assumptions.map(a => '<li>' + a + '</li>').join('') }}</ul><h4>Excluded</h4><ul>{{ $json.drafted.exclusions.map(a => '<li>' + a + '</li>').join('') }}</ul><h4>Lines</h4><pre>{{ JSON.stringify($json.drafted.line_items, null, 2) }}</pre><p><a href=\"{{ $execution.resumeUrl }}\">Approve as drafted</a> \u2014 or edit the sheet first, then approve.</p>",
+        "options": {}
+      },
+      "id": "da416a26-9f28-4e87-a0a0-c1201cc9b5c1",
+      "name": "Send review request",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        1320,
+        -140
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// THE measurement. Everything else in this workflow exists so that this node has\n// something honest to compare.\n//\n// The approved version is read back from the sheet because that is where the owner\n// actually edits it. If she approves without touching anything, drafted === approved\n// and the override list is empty \u2014 which is itself the finding you are looking for.\nconst before = $('Prepare review').first().json;\nconst drafted = before.drafted;\n\nlet approved = drafted;\ntry {\n  approved = JSON.parse($json.approved_json ?? '{}');\n  if (!approved.line_items) approved = drafted;\n} catch (e) {\n  approved = drafted;\n}\n\nconst overridden = [];\nif (Number(approved.total_chf) !== Number(drafted.total_chf)) overridden.push('total_chf');\n\nconst byCode = (arr) => Object.fromEntries((arr ?? []).map(li => [li.code, li]));\nconst dMap = byCode(drafted.line_items);\nconst aMap = byCode(approved.line_items);\n\nfor (const code of new Set([...Object.keys(dMap), ...Object.keys(aMap)])) {\n  const d = dMap[code], a = aMap[code];\n  if (!a) { overridden.push(`line_removed:${code}`); continue; }\n  if (!d) { overridden.push(`line_added:${code}`);   continue; }\n  if (Number(d.quantity)      !== Number(a.quantity))      overridden.push(`quantity:${code}`);\n  if (Number(d.unit_rate_chf) !== Number(a.unit_rate_chf)) overridden.push(`rate:${code}`);\n}\n\nconst openedAt = new Date(before.review_opened_at);\nconst now = new Date();\n\nreturn [{\n  json: {\n    job_id: before.job_id,\n    prompt_version: before.prompt_version,\n    model: before.model,\n    review_opened_at: before.review_opened_at,\n    review_approved_at: now.toISOString(),\n    review_duration_seconds: Math.round((now - openedAt) / 1000),\n    drafted_total_chf: drafted.total_chf,\n    approved_total_chf: approved.total_chf,\n    delta_chf: Number((Number(approved.total_chf) - Number(drafted.total_chf)).toFixed(2)),\n    line_count_drafted: (drafted.line_items ?? []).length,\n    line_count_approved: (approved.line_items ?? []).length,\n    fields_overridden: overridden,\n    override_count: overridden.length,\n    // Untouched means the owner trusted it as-is. Tracked weekly, the rise of this\n    // number is calibration \u2014 and it is the chart that answers the research question.\n    approved_untouched: overridden.length === 0,\n    invented_code_count: before.invented_code_count,\n  },\n}];"
+      },
+      "id": "87b15732-5771-4c5f-a173-4db36c23d71e",
+      "name": "Diff draft against approved",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1760,
+        -140
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "REPLACE_WITH_YOUR_SPREADSHEET_ID"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "quote_reviews"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "job_id": "={{ $json.job_id }}",
+            "prompt_version": "={{ $json.prompt_version }}",
+            "model": "={{ $json.model }}",
+            "review_opened_at": "={{ $json.review_opened_at }}",
+            "review_approved_at": "={{ $json.review_approved_at }}",
+            "review_duration_seconds": "={{ $json.review_duration_seconds }}",
+            "drafted_total_chf": "={{ $json.drafted_total_chf }}",
+            "approved_total_chf": "={{ $json.approved_total_chf }}",
+            "delta_chf": "={{ $json.delta_chf }}",
+            "override_count": "={{ $json.override_count }}",
+            "approved_untouched": "={{ $json.approved_untouched }}",
+            "invented_code_count": "={{ $json.invented_code_count }}"
+          },
+          "schema": [
+            {
+              "id": "job_id",
+              "displayName": "job_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "prompt_version",
+              "displayName": "prompt_version",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "model",
+              "displayName": "model",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "review_opened_at",
+              "displayName": "review_opened_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "review_approved_at",
+              "displayName": "review_approved_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "review_duration_seconds",
+              "displayName": "review_duration_seconds",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "drafted_total_chf",
+              "displayName": "drafted_total_chf",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "approved_total_chf",
+              "displayName": "approved_total_chf",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "delta_chf",
+              "displayName": "delta_chf",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "override_count",
+              "displayName": "override_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "approved_untouched",
+              "displayName": "approved_untouched",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "invented_code_count",
+              "displayName": "invented_code_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "matchingColumns": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "id": "ea8729e5-6e1a-4f0a-a75e-c2417cab14d4",
+      "name": "Record review outcome",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        1980,
+        -140
+      ]
+    },
+    {
+      "parameters": {
+        "content": "## What comes out of this table\n\nThe `quote_reviews` tab is your results chapter.\n\n**Plot override rate by field, by week.** If the owner stops correcting material quantities by week 3 but never stops correcting labour hours, you have located the automation boundary empirically rather than argued for it.\n\nAlso watch `delta_chf`. If drafts are consistently under-priced, the business loses money every time review is rushed \u2014 which is an argument for keeping the gate that does not depend on anyone's opinion about AI.",
+        "width": 440,
+        "height": 300,
+        "color": 4
+      },
+      "id": "e1eabcf9-e9bc-462d-b929-69c4e27762ab",
+      "name": "Note 3",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1920,
+        100
+      ]
+    }
+  ],
+  "connections": {
+    "Claude \u2014 drafting": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Draft the quote",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Quote shape": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Draft the quote",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recce complete": {
+      "main": [
+        [
+          {
+            "node": "Load price list",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Load past work",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load price list": {
+      "main": [
+        [
+          {
+            "node": "Build pricing context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load past work": {
+      "main": [
+        [
+          {
+            "node": "Build pricing context",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build pricing context": {
+      "main": [
+        [
+          {
+            "node": "Draft the quote",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Draft the quote": {
+      "main": [
+        [
+          {
+            "node": "Check against rate card",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check against rate card": {
+      "main": [
+        [
+          {
+            "node": "Store draft",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Prepare review",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare review": {
+      "main": [
+        [
+          {
+            "node": "Send review request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send review request": {
+      "main": [
+        [
+          {
+            "node": "Await owner approval",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Await owner approval": {
+      "main": [
+        [
+          {
+            "node": "Diff draft against approved",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Diff draft against approved": {
+      "main": [
+        [
+          {
+            "node": "Record review outcome",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "instanceId": ""
+  }
+}
