@@ -1,0 +1,367 @@
+{
+  "name": "W5 \u00b7 Completion to cash",
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## W5 \u2014 Completion to cash\n\n**Boundary: automatic issue only when the invoice matches the approved quote exactly. Any variation goes to a human.**\nThe test is not job size, it is whether the amount differs from what the customer agreed to. Scored 3/4/4.\n\n### Two lags, both worth measuring\n`completion \u2192 invoice` is the one automation moves, often dramatically \u2014 the person who finishes the job is not the person who invoices, and that handover is where days disappear.\n\n`invoice \u2192 paid` mostly is not yours to move. Report both and be honest about which one you affected.\n\nIn the sample data 28% of jobs carried a variation. If your business is similar, the human gate fires on roughly one job in four \u2014 which is the number that tells you whether this workflow is worth its complexity.",
+        "width": 500,
+        "height": 460,
+        "color": 5
+      },
+      "id": "455a6d4d-25a1-4bc0-acce-e1cdca6b0431",
+      "name": "Note 1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -860,
+        -400
+      ]
+    },
+    {
+      "parameters": {
+        "path": "job-complete",
+        "httpMethod": "POST",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "b02dfe75-d091-44a8-a006-178e15b70200",
+      "name": "Job marked complete",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        -320,
+        -100
+      ],
+      "webhookId": "8bcca799-b118-4d26-8149-08c499e26364"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "REPLACE_WITH_YOUR_SPREADSHEET_ID"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "quote_reviews"
+        },
+        "options": {}
+      },
+      "id": "bce9447f-1737-460b-b75f-bcec362aec91",
+      "name": "Load approved quote",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        -100,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $('Job marked complete').first().json.body ?? $('Job marked complete').first().json;\nconst rows = $('Load approved quote').all().map(i => i.json);\nconst quote = rows.find(r => r.job_id === body.job_id);\n\nconst variations = Array.isArray(body.variations) ? body.variations : [];\nconst variationTotal = variations.reduce((s, v) => s + Number(v.amount_chf ?? 0), 0);\n\nconst agreed = Number(quote?.approved_total_chf ?? 0);\nconst invoiceTotal = Number((agreed + variationTotal).toFixed(2));\n\nconst completedAt = body.completed_at ?? new Date().toISOString();\n\nreturn [{\n  json: {\n    job_id: body.job_id,\n    completed_at: completedAt,\n    agreed_total_chf: agreed,\n    variation_total_chf: Number(variationTotal.toFixed(2)),\n    invoice_total_chf: invoiceTotal,\n    variation_count: variations.length,\n    variation_summary: variations.map(v => `${v.description} (CHF ${v.amount_chf})`).join('; '),\n    // The single condition. Not job size, not a percentage \u2014 any difference at all from\n    // what the customer agreed to means a human sends it.\n    matches_agreed: variations.length === 0 && Math.abs(invoiceTotal - agreed) < 0.01,\n    email: body.email ?? quote?.email ?? null,\n    customer_name: body.customer_name ?? null,\n  },\n}];"
+      },
+      "id": "2da64d40-1e85-4815-ad11-3107b521d6f7",
+      "name": "Compare to what was agreed",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        140,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "combinator": "and",
+          "conditions": [
+            {
+              "id": "dde65c0b-6746-41ec-bb03-b2dc44d43437",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              },
+              "leftValue": "={{ $json.matches_agreed }}",
+              "rightValue": ""
+            }
+          ]
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "id": "1240749f-df53-45fd-a8f1-08b87c3d6df7",
+      "name": "Matches the agreed quote?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        380,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "fromEmail": "workflow@example.ch",
+        "toEmail": "={{ $json.email }}",
+        "subject": "=Invoice \u2014 {{ $json.job_id }} \u2014 CHF {{ $json.invoice_total_chf }}",
+        "emailFormat": "html",
+        "html": "=<p>Hallo {{ $json.customer_name }},</p><p>The work is complete. Invoice total <strong>CHF {{ $json.invoice_total_chf }}</strong>, as quoted.</p><p>Payable within 30 days.</p>",
+        "options": {}
+      },
+      "id": "5fc15dc6-b552-468b-a3ba-70f531cd0097",
+      "name": "Issue invoice",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        620,
+        -240
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "send",
+        "fromEmail": "workflow@example.ch",
+        "toEmail": "owner@example.ch",
+        "subject": "=Variation to approve \u2014 {{ $json.job_id }} \u2014 CHF {{ $json.variation_total_chf }} over quote",
+        "emailFormat": "html",
+        "html": "=<p><strong>{{ $json.job_id }}</strong> finished at a different number from the one the customer agreed.</p><p>Agreed: CHF {{ $json.agreed_total_chf }}<br>Variations: CHF {{ $json.variation_total_chf }}<br><strong>Invoice would be: CHF {{ $json.invoice_total_chf }}</strong></p><p>{{ $json.variation_summary }}</p><p>Nothing has been sent. Send it yourself once you are happy.</p>",
+        "options": {}
+      },
+      "id": "18c3899a-4994-499f-937c-9d827f49e311",
+      "name": "Owner approves variation",
+      "type": "n8n-nodes-base.emailSend",
+      "typeVersion": 2.1,
+      "position": [
+        620,
+        40
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "REPLACE_WITH_YOUR_SPREADSHEET_ID"
+        },
+        "sheetName": {
+          "__rl": true,
+          "mode": "name",
+          "value": "invoices"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "job_id": "={{ $json.job_id }}",
+            "completed_at": "={{ $json.completed_at }}",
+            "invoiced_at": "={{ $json.invoiced_at }}",
+            "agreed_total_chf": "={{ $json.agreed_total_chf }}",
+            "variation_total_chf": "={{ $json.variation_total_chf }}",
+            "invoice_total_chf": "={{ $json.invoice_total_chf }}",
+            "variation_count": "={{ $json.variation_count }}",
+            "auto_issued": "={{ $json.auto_issued }}"
+          },
+          "schema": [
+            {
+              "id": "job_id",
+              "displayName": "job_id",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "completed_at",
+              "displayName": "completed_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "invoiced_at",
+              "displayName": "invoiced_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "agreed_total_chf",
+              "displayName": "agreed_total_chf",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "variation_total_chf",
+              "displayName": "variation_total_chf",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "invoice_total_chf",
+              "displayName": "invoice_total_chf",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "variation_count",
+              "displayName": "variation_count",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "auto_issued",
+              "displayName": "auto_issued",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "matchingColumns": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": true
+        },
+        "options": {}
+      },
+      "id": "f4cdf416-e446-4432-8d65-89b2e5596787",
+      "name": "Record cash timings",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        900,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// completion \u2192 invoice is the lag automation actually moves. Capture it at the moment\n// the invoice goes, not at the end of the month from memory.\nreturn [{ json: { ...$json, invoiced_at: new Date().toISOString(),\n                  auto_issued: $json.matches_agreed === true } }];"
+      },
+      "id": "5012abb7-2f8d-4860-8f97-c9b583be83d4",
+      "name": "Stamp invoice time",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        760,
+        -100
+      ]
+    }
+  ],
+  "connections": {
+    "Job marked complete": {
+      "main": [
+        [
+          {
+            "node": "Load approved quote",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load approved quote": {
+      "main": [
+        [
+          {
+            "node": "Compare to what was agreed",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compare to what was agreed": {
+      "main": [
+        [
+          {
+            "node": "Matches the agreed quote?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Matches the agreed quote?": {
+      "main": [
+        [
+          {
+            "node": "Issue invoice",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Owner approves variation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Issue invoice": {
+      "main": [
+        [
+          {
+            "node": "Stamp invoice time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Owner approves variation": {
+      "main": [
+        [
+          {
+            "node": "Stamp invoice time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Stamp invoice time": {
+      "main": [
+        [
+          {
+            "node": "Record cash timings",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "instanceId": ""
+  }
+}
