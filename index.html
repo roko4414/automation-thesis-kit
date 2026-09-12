@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Automation Boundary Thesis Kit</title>
-<meta name="description" content="A starting kit for a master's thesis on workflow automation: five ready-made workflows for five kinds of small business.">
+<title>Nev&rsquo;s Master Thesis</title>
+<meta name="description" content="A workflow automation built for small service businesses, and the argument about where it should stop.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;1,6..72,400&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
@@ -317,9 +317,15 @@ pre code{background:none;border:none;padding:0;font-size:12.5px;line-height:1.6;
 <div class="shell">
 
   <header class="masthead">
-    <p class="eyebrow">Master's thesis · starting kit</p>
-    <h1>Where should the robot stop?</h1>
-    <p class="standfirst">You will build a working automation for a small business, run it for a month, and write up what happened. The workflows are already here. The thinking is the part that has to be yours.</p>
+    <p class="eyebrow">University of St. Gallen · workflow automation</p>
+    <h1>Nev&rsquo;s Master Thesis</h1>
+    <p class="standfirst">A working automation for a small service business, and a written argument about one decision inside it: which steps a computer can be trusted with, and which ones still need a person.</p>
+    <ul class="meta">
+      <li><strong>Built</strong> 25 workflows, 255 nodes</li>
+      <li><strong>Across</strong> 5 kinds of business</li>
+      <li><strong>Tested with</strong> 60 example messages</li>
+      <li><strong>Runs on</strong> n8n + Claude</li>
+    </ul>
   </header>
 
   <main>
@@ -362,7 +368,7 @@ pre code{background:none;border:none;padding:0;font-size:12.5px;line-height:1.6;
       <p>The automation runs all five steps. It is not allowed to <strong>send a price</strong> on its own, though. It drafts one, and a person checks it before it goes out.</p>
 
       <div class="hero-note">
-        <p><strong>That rule is the thesis.</strong> Anyone can build an automation and say so. The part worth a master&rsquo;s is the argument underneath it: you let the computer handle four of these steps and not the fifth, and you can show why.</p>
+        <p><strong>That rule is the argument.</strong> Anyone can build an automation and say so. The part worth a master&rsquo;s is the reasoning underneath it: four of these steps run on their own, the fifth does not, and there is evidence for why the line sits there.</p>
       </div>
 
       <div class="twocol">
@@ -377,16 +383,17 @@ pre code{background:none;border:none;padding:0;font-size:12.5px;line-height:1.6;
       </div>
     </section>
 
-    <section id="pick">
-      <div class="sec-head"><span class="sec-num">02</span><h2>Pick a kind of business</h2></div>
-      <p class="lede">The same five workflows come ready for five different businesses. One skeleton underneath, with the vocabulary, the price list and the approval rules swapped out.</p>
-      <p>You need <strong>one</strong> of them. The other four are there so you can say whether the idea travels between industries, which is worth a chapter on its own.</p>
+    <section id="five">
+      <div class="sec-head"><span class="sec-num">02</span><h2>Five kinds of business</h2></div>
+      <p class="lede">The same five workflows have been built for five different trades. One skeleton underneath, with the vocabulary, the price list and the approval rules swapped out.</p>
+
+      <p>Only one of them is needed for the thesis itself. The other four exist so there is something to say about whether the idea travels between industries, and they turn out to disagree with each other in useful ways.</p>
 
       <div class="bizgrid">
           <article class="biz">
             <h3>Electrical contractor</h3>
             <p class="what">Someone visits, looks at the work, then prices it.</p>
-            <p class="why">The most straightforward one. Start here if you are unsure.</p>
+            <p class="why">The most straightforward of the five, and the one everything else is measured against.</p>
             <p class="links">
               <a href="https://github.com/roko4414/automation-thesis-kit/tree/main/industries/trades/workflows">5 workflows</a>
               <a href="industries/trades/enquiries.json">12 example messages</a>
@@ -406,7 +413,7 @@ pre code{background:none;border:none;padding:0;font-size:12.5px;line-height:1.6;
           <article class="biz">
             <h3>Physiotherapy practice</h3>
             <p class="what">An assessment, then a course of treatment. An insurer often pays.</p>
-            <p class="why">The strongest argument in the kit for keeping a person involved. Some messages describe symptoms that need a human straight away. One of them is written so calmly that a careless system would just book it for next Tuesday.</p>
+            <p class="why">The strongest argument in the set for keeping a person involved. Some messages describe symptoms that need a human straight away. One of them is written so calmly that a careless system would just book it for next Tuesday.</p>
             <p class="links">
               <a href="https://github.com/roko4414/automation-thesis-kit/tree/main/industries/wellness/workflows">5 workflows</a>
               <a href="industries/wellness/enquiries.json">12 example messages</a>
@@ -416,7 +423,7 @@ pre code{background:none;border:none;padding:0;font-size:12.5px;line-height:1.6;
           <article class="biz">
             <h3>Tax &amp; accounting firm</h3>
             <p class="what">A scoping call, then an engagement letter.</p>
-            <p class="why">There is no visit at all. The work gets described to you, never inspected. You also have to check for a conflict of interest <em>before</em> quoting, which no other business here needs.</p>
+            <p class="why">There is no visit at all. The work gets described, never inspected. A conflict of interest has to be ruled out <em>before</em> anything can be priced, which no other business here needs.</p>
             <p class="links">
               <a href="https://github.com/roko4414/automation-thesis-kit/tree/main/industries/advisory/workflows">5 workflows</a>
               <a href="industries/advisory/enquiries.json">12 example messages</a>
@@ -435,54 +442,53 @@ pre code{background:none;border:none;padding:0;font-size:12.5px;line-height:1.6;
           </article>
       </div>
 
-      <p>Pick whichever kind of business you can actually get access to. An owner who will let you sit and watch for a few weeks beats the most interesting industry on paper, every time. If you have no lead yet, read the electrical contractor first. It is the easiest to follow.</p>
+      <p>Those disagreements are the interesting part. A physiotherapist and an electrician run the same five steps on paper, but the moment where a person has to step in is not in the same place, and it is not there for the same reason.</p>
     </section>
 
-    <section id="do">
-      <div class="sec-head"><span class="sec-num">03</span><h2>What you actually do</h2></div>
+    <section id="built">
+      <div class="sec-head"><span class="sec-num">03</span><h2>What has been built</h2></div>
 
-      <ol class="steps">
-        <li><strong>Find a small business that will let you watch.</strong> Three to eight people is about right. This is the hardest step and everything else depends on it, so start now.</li>
-        <li><strong>Watch how they work now, before changing anything.</strong> Follow five or six jobs from first message to getting paid, and write down how long each step takes. Boring, and completely essential. Without it you have nothing to compare against at the end.</li>
-        <li><strong>Draw your own line.</strong> For each step, two questions: is it different every time, and how bad is it if it goes wrong? Mostly the same and harmless when wrong, let the computer do it. Different every time and expensive when wrong, keep a person on it. Your answers may not match mine, and where they differ is worth writing about.</li>
-        <li><strong>Import the workflows and get them running.</strong> The files are ready to load. You will change things to fit your business, and those changes are evidence, so keep a note of them.</li>
-        <li><strong>Run it for a month and measure.</strong> Above all: when the computer drafts a price, what does the owner change before sending it?</li>
-        <li><strong>Write it up.</strong> What you built, why you drew the line where you did, and what actually happened.</li>
-      </ol>
+      <p class="lede">Everything here is real and working, not a mock-up. The workflow files load straight into n8n and the example data is designed to break them in specific ways.</p>
 
-      <p>One thing to watch for while it runs. If the owner stops correcting one part of the drafted price after a few weeks but carries on correcting another part, that is your result. It shows where the computer earned trust and where it did not, and you will have the numbers rather than an opinion.</p>
-    </section>
-
-    <section id="where">
-      <div class="sec-head"><span class="sec-num">04</span><h2>Where everything is</h2></div>
       <div class="table-wrap">
         <table>
-          <thead><tr><th>Folder</th><th>What is in it</th></tr></thead>
+          <thead><tr><th>What</th><th>How much</th><th>What it is</th></tr></thead>
           <tbody>
-            <tr><td><code>industries/</code></td><td>One folder per kind of business: the five workflows, twelve example messages, and a price list.</td></tr>
-            <tr><td><code>prompts/</code></td><td>The instructions given to the AI, in plain files you can edit and keep versions of.</td></tr>
-            <tr><td><code>docs/</code></td><td>How the workflow files work, and the shape of the record that follows a job through all five steps.</td></tr>
-            <tr><td><code>scripts/</code></td><td>Two small tools: one builds the workflows, one checks them for mistakes before you import.</td></tr>
+            <tr><td>Workflows</td><td class="wk">25 files</td><td>Five per business. 255 working nodes, plus 45 notes pinned to the canvas explaining each decision.</td></tr>
+            <tr><td>Example messages</td><td class="wk">60</td><td>Twelve per business, written the way real people write. Emails, texts, web forms, phone transcripts. Some in German.</td></tr>
+            <tr><td>Price lists</td><td class="wk">145 lines</td><td>Real-shaped pricing in Swiss francs, including the compliance items each trade has to charge for.</td></tr>
+            <tr><td>Prompts</td><td class="wk">3</td><td>The instructions given to the AI, kept in plain files with version numbers so a change can be traced.</td></tr>
+            <tr><td>Checker</td><td class="wk">1</td><td>A script that catches the mistakes that let a workflow load and then quietly misbehave.</td></tr>
           </tbody>
         </table>
       </div>
 
-      <h3>Before you import anything</h3>
-      <p>Run this first. It catches the kind of mistake that lets a workflow load successfully and then quietly behave wrong:</p>
-      <pre class="cmd"><code>python3 scripts/validate-workflows.py industries/*/workflows/*.json</code></pre>
+      <h3>The example messages are the good bit</h3>
+      <p>They are not filler. Each one is built to test something specific, and each says so in the file. There is a message with no contact details that must be refused. One that is clearly outside the service area. One from a different canton that looks outside the area but should be accepted anyway.</p>
+      <p>And in every set, one emergency. In the physiotherapy set it is a description of symptoms that needs a person immediately, written calmly enough that a careless system would treat it as routine and offer an appointment. If the automation ever does that, it is worth writing about rather than quietly fixing.</p>
+    </section>
+
+    <section id="proves">
+      <div class="sec-head"><span class="sec-num">04</span><h2>What it measures</h2></div>
+
+      <p class="lede">The quote-drafting workflow keeps a record of every draft it writes and every version a person approved, side by side.</p>
+
+      <p>So for each price that goes out, there is a record of what the computer suggested, what the human changed, and how long the check took. Over a few weeks that turns into a picture of exactly where the machine was trusted and where it was not.</p>
+
+      <p>If the corrections to one part of the price stop coming after a fortnight while corrections to another part carry on, that is the result. It shows where trust was earned, with numbers behind it rather than an opinion.</p>
 
       <div class="note">
         <span class="tag">Worth knowing</span>
-        <p>These workflows have been checked carefully, but nobody has run them on a live system yet. Expect to fix a couple of small things the first time you import one. That is normal. Write down what you had to fix, because it is useful material later.</p>
+        <p>The workflows have been checked carefully, but nobody has run them on a live system yet. The first real import will turn up a couple of small things to fix. That is normal, and what needed fixing is useful material for the write-up.</p>
       </div>
 
-      <p class="more"><a href="reference.html">All the detail →</a> &nbsp;·&nbsp; the scoring behind each decision, how to measure it properly, and the technical reference. None of it is needed to start.</p>
+      <p class="more"><a href="reference.html">All the detail &rarr;</a> &nbsp;·&nbsp; the scoring behind each decision, how to measure it properly, and the technical reference.</p>
     </section>
 
   </main>
 
   <footer>
-    <p>Starting kit · workflows checked but not yet run live · the businesses described are composites of how these trades generally work, not real companies</p>
+    <p>Workflows checked but not yet run live · the businesses described are composites of how these trades generally work, not real companies · prices and regulatory detail are illustrative</p>
   </footer>
 </div>
 </body>
