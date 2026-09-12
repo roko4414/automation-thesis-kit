@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Reference — Automation Boundary Kit</title>
+<title>Reference · Automation Boundary Kit</title>
 <meta name="description" content="Five importable n8n workflows, sample data and a measurement design for a master's thesis on workflow automation.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -294,7 +294,7 @@ pre code{background:none;border:none;padding:0;font-size:12.5px;line-height:1.6;
   <header class="masthead">
     <p class="eyebrow"><a href="index.html" style="color:inherit">← Back to the simple version</a></p>
     <h1>Five workflows, and the argument for where they stop</h1>
-    <p class="standfirst">Importable n8n workflows for a trade contractor's quote-to-cash process, with the sample data to run them and the measurement design to write them up. The interesting part is not that they run — it is where each one hands back to a human, and why.</p>
+    <p class="standfirst">Importable n8n workflows for a trade contractor's quote-to-cash process, with the sample data to run them and the measurement design to write them up. What matters is where each one hands back to a human, and why.</p>
     <ul class="meta">
       <li><strong>Import</strong> 5 workflows, 42 nodes</li>
       <li><strong>Stack</strong> n8n + Claude + Google Sheets</li>
@@ -320,25 +320,25 @@ pre code{background:none;border:none;padding:0;font-size:12.5px;line-height:1.6;
 
       <section id="start">
         <div class="sec-head"><span class="sec-num">00</span><h2>Get it running</h2></div>
-        <p class="lede">Roughly an hour, most of it credentials. Nothing here needs a build step — the workflows are plain JSON files you import through the n8n editor.</p>
+        <p class="lede">Roughly an hour, most of it credentials. Nothing here needs a build step. The workflows are plain JSON files you import through the n8n editor.</p>
 
         <ol class="steps">
           <li><strong>Check your n8n version first.</strong> Every <code>typeVersion</code> in these files is pinned to a value that exists in older releases too, but a version your instance does not know will import and then behave strangely rather than failing loudly.
             <pre class="cmd"><code>n8n --version</code></pre></li>
           <li><strong>Make a Google Sheet</strong> with tabs named <code>jobs</code>, <code>unqualified</code>, <code>events</code>, <code>rate_card</code>, <code>historical_jobs</code>, <code>quote_drafts</code>, <code>quote_reviews</code>, <code>scheduling</code>, <code>quotes_sent</code>, <code>followups</code>, <code>invoices</code>. Paste the two CSVs into <code>rate_card</code> and <code>historical_jobs</code>.</li>
-          <li><strong>Replace the placeholder</strong> everywhere it appears — it is deliberately obvious:
+          <li><strong>Replace the placeholder</strong> everywhere it appears. It is deliberately obvious:
             <pre class="cmd"><code>grep -rl REPLACE_WITH_YOUR_SPREADSHEET_ID workflows/ \
   | xargs sed -i '' 's/REPLACE_WITH_YOUR_SPREADSHEET_ID/&lt;your sheet id&gt;/g'</code></pre></li>
           <li><strong>Validate before importing.</strong> This catches the failure modes that let an import "succeed" while quietly dropping half your wiring:
             <pre class="cmd"><code>python3 scripts/validate-workflows.py workflows/*.json</code></pre></li>
           <li><strong>Import</strong> each file: <em>Workflows → ⋯ → Import from File</em>. Start with W1.</li>
-          <li><strong>Set credentials by hand.</strong> No credentials ship in these files, on purpose — see <a href="docs/n8n-json-reference.md">the reference</a>. Open every Anthropic, Sheets and Email node and pick yours. Do not trust the auto-attach toast; n8n binds the most recently updated credential of the right type, which may not be the one you want.</li>
-          <li><strong>Test W1</strong> with the sample enquiries. Three must behave specifically: <code>ENQ-006</code> is refused, <code>ENQ-011</code> escalates as a safety emergency, <code>ENQ-008</code> is out of area. If <code>ENQ-011</code> enters the normal quote flow, that is not a bug to quietly fix — write it down, it is a result.</li>
+          <li><strong>Set credentials by hand.</strong> No credentials ship in these files, on purpose. See <a href="docs/n8n-json-reference.md">the reference</a>. Open every Anthropic, Sheets and Email node and pick yours. Do not trust the auto-attach toast; n8n binds the most recently updated credential of the right type, which may not be the one you want.</li>
+          <li><strong>Test W1</strong> with the sample enquiries. Three must behave specifically: <code>ENQ-006</code> is refused, <code>ENQ-011</code> escalates as a safety emergency, <code>ENQ-008</code> is out of area. If <code>ENQ-011</code> enters the normal quote flow, do not quietly fix it. Write it down. It is a result.</li>
         </ol>
 
         <div class="note">
           <span class="tag">Honest status</span>
-          <p>These files are validated structurally — envelope, node shapes, connection integrity, AI cluster wiring, typeVersion pins — but <strong>nobody has imported them into a live n8n instance yet</strong>. Import one end to end before building a week of work on top. Expect to fix something.</p>
+          <p>These files are validated structurally, envelope, node shapes, connection integrity, AI cluster wiring, typeVersion pins, but <strong>nobody has imported them into a live n8n instance yet</strong>. Import one end to end before building a week of work on top of it. Expect to fix something.</p>
         </div>
       </section>
 
@@ -395,7 +395,7 @@ pre code{background:none;border:none;padding:0;font-size:12.5px;line-height:1.6;
               <line x1="500" y1="176" x2="500" y2="200" stroke="var(--rule-strong)" stroke-width="1" stroke-dasharray="2 3"/>
               <line x1="700" y1="176" x2="700" y2="200" stroke="var(--rule-strong)" stroke-width="1" stroke-dasharray="2 3"/>
               <line x1="900" y1="176" x2="900" y2="200" stroke="var(--rule-strong)" stroke-width="1" stroke-dasharray="2 3"/>
-              <text x="20" y="232" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--muted)">One job record, accumulating state across all five — process automation, not five task automations.</text>
+              <text x="20" y="232" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--muted)">One job record, accumulating state across all five. That is what makes it process automation.</text>
               <text x="20" y="254" font-family="IBM Plex Mono, monospace" font-size="11" fill="var(--faint)">Every workflow appends to its event log. Build that logging before the automation, or there is no baseline.</text>
             </svg>
           </div>
@@ -404,14 +404,14 @@ pre code{background:none;border:none;padding:0;font-size:12.5px;line-height:1.6;
             <li><span class="swatch" style="background:var(--surface);border-top:3px solid var(--gate);border-left:1px solid var(--rule-strong);border-right:1px solid var(--rule-strong);border-bottom:1px solid var(--rule-strong)"></span>Conditional gate</li>
             <li><span class="swatch" style="background:var(--gate-soft);border:2px solid var(--gate)"></span>Mandatory gate</li>
           </ul>
-          <figcaption>Fig. 1 — Gate placement follows the scores on each card below. W3 is unconditional because variance and consequence are both high and a sent quote cannot be withdrawn.</figcaption>
+          <figcaption>Fig. 1 · Gate placement follows the scores on each card below. W3 is unconditional because variance and consequence are both high and a sent quote cannot be withdrawn.</figcaption>
         </figure>
 
         <div class="flows">
           <article class="flow ">
             <div class="flow-top"><span class="flow-id">W1</span><span class="flow-name">Enquiry intake and triage</span><span class="pill ">Fully automated</span></div>
             <dl>
-              <dt>Does</dt><dd>Any inbound enquiry becomes one structured job record — or is refused, with the reason written down.</dd>
+              <dt>Does</dt><dd>Any inbound enquiry becomes one structured job record, or is refused with the reason written down.</dd>
               <dt>Why</dt><dd>Low consequence: a misfiled enquiry surfaces in the review queue. The one exception is a safety emergency, which leaves the automated path immediately.</dd>
               <dt>File</dt><dd><a href="industries/trades/workflows/01-enquiry-intake.json"><code>01-enquiry-intake.json</code></a> · 13 nodes · 31 KB</dd>
             </dl>
@@ -439,7 +439,7 @@ pre code{background:none;border:none;padding:0;font-size:12.5px;line-height:1.6;
             <div class="flow-top"><span class="flow-id">W4</span><span class="flow-name">Quote follow-up</span><span class="pill gate">Hard stop on human reply</span></div>
             <dl>
               <dt>Does</dt><dd>Three nudges at day 3, 7 and 14, then escalate. Stops dead the moment a human replies.</dd>
-              <dt>Why</dt><dd>Low consequence per message, but the failure mode is reputational and compounding — so the stop condition is absolute rather than probabilistic.</dd>
+              <dt>Why</dt><dd>Low consequence per message, but the failure mode is reputational and compounding, so the stop condition is absolute rather than probabilistic.</dd>
               <dt>File</dt><dd><a href="industries/trades/workflows/04-follow-up.json"><code>04-follow-up.json</code></a> · 9 nodes · 13 KB</dd>
             </dl>
             <p class="gatebar"><b>Boundary scores</b> <span class="scores">variance / consequence / data-availability &nbsp;2 / 3 / 5</span></p>
@@ -458,7 +458,7 @@ pre code{background:none;border:none;padding:0;font-size:12.5px;line-height:1.6;
 
       <section id="boundary">
         <div class="sec-head"><span class="sec-num">02</span><h2>How the boundary was placed</h2></div>
-        <p class="lede">Every gate above comes from the same three-axis score. This is the part that makes it a thesis rather than a build log — an examiner can disagree with a score, which is a far better position than disagreeing with your whole design.</p>
+        <p class="lede">Every gate above comes from the same three-axis score. This is the part that makes it a thesis rather than a build log. An examiner can disagree with a score, which is a far better position to be in than defending the whole design.</p>
 
         <div class="table-wrap">
           <table>
@@ -476,11 +476,11 @@ pre code{background:none;border:none;padding:0;font-size:12.5px;line-height:1.6;
           <li>Low variance, low consequence, high availability → <strong>fully automate</strong>.</li>
           <li>High variance, low consequence → <strong>draft-and-review</strong>. The system proposes, the human disposes.</li>
           <li>Any high consequence → <strong>human decides</strong>; automation only assembles the evidence.</li>
-          <li>Low data availability → <strong>do not automate yet</strong>. The prior project is capturing the data — and saying so in a thesis is a finding, not a failure.</li>
+          <li>Low data availability → <strong>do not automate yet</strong>. The prior project is capturing the data, and saying so in a thesis is a finding, not a failure.</li>
         </ul>
 
         <div class="question">
-          <p>In a high-variance, low-data-maturity small business, where should the boundary between automated and human decision sit — and what evidence justifies placing it there?</p>
+          <p>In a high-variance, low-data-maturity small business, where should the boundary between automated and human decision sit, and what evidence justifies placing it there?</p>
         </div>
         <p>Score your own observed business on these axes. If it scores differently, <strong>move the gate and say why</strong>. A boundary that moved because of evidence is the strongest thing you can put in a results chapter, and it is what separates this from a description of features.</p>
       </section>
@@ -524,7 +524,7 @@ pre code{background:none;border:none;padding:0;font-size:12.5px;line-height:1.6;
             <a class="file" href="scripts/validate-workflows.py"><code>validate-workflows.py</code><span>Checks every one of those failure modes before you import.</span><span class="sz">scripts/</span></a>
             <a class="file" href="scripts/build_workflows.py"><code>build_workflows.py</code><span>Generates the five workflows. Edit here, not in the JSON.</span><span class="sz">scripts/</span></a>
         </div>
-        <p>The workflows are <em>generated</em>, not hand-written — edit <code>scripts/build_workflows.py</code> and rebuild, rather than editing JSON directly. Hand-authored n8n JSON fails in bookkeeping ways: a duplicate node name silently collapses connections, a mistyped target is dropped without warning. The generator makes those impossible and the validator catches the rest.</p>
+        <p>The workflows are <em>generated</em>, not hand-written, edit <code>scripts/build_workflows.py</code> and rebuild, rather than editing JSON directly. Hand-authored n8n JSON fails in bookkeeping ways: a duplicate node name silently collapses connections, a mistyped target is dropped without warning. The generator makes those impossible and the validator catches the rest.</p>
         <pre class="cmd"><code>python3 scripts/build_workflows.py
 python3 scripts/validate-workflows.py workflows/*.json</code></pre>
       </section>
@@ -540,10 +540,10 @@ python3 scripts/validate-workflows.py workflows/*.json</code></pre>
               <tr><td class="wk">1–2</td><td>Secure a business to observe</td><td>Signed access, weekly 30 minutes agreed</td></tr>
               <tr><td class="wk">2–3</td><td>Observe 5–8 jobs end to end</td><td>Process model with exception branches</td></tr>
               <tr><td class="wk">3–4</td><td>Baseline, instrumented or reconstructed</td><td>Four weeks running, every figure labelled</td></tr>
-              <tr><td class="wk">4</td><td>Score every step, place the gates</td><td>Annotated model. Send to Roger — natural checkpoint</td></tr>
+              <tr><td class="wk">4</td><td>Score every step, place the gates</td><td>Annotated model. Send to Roger, natural checkpoint</td></tr>
               <tr><td class="wk">5</td><td>n8n up, sheet built, W1 imported</td><td>A real enquiry produces a real job record</td></tr>
               <tr><td class="wk">5–6</td><td>W1 + W2 running on live enquiries</td><td>Slots proposed, travel figures recorded</td></tr>
-              <tr><td class="wk">7–8</td><td>W3 — prompt iteration against real visits</td><td>Owner approves a drafted quote, edits captured</td></tr>
+              <tr><td class="wk">7–8</td><td>W3, prompt iteration against real visits</td><td>Owner approves a drafted quote, edits captured</td></tr>
               <tr><td class="wk">9</td><td>W4 + W5</td><td>One job traverses all five</td></tr>
               <tr><td class="wk">9–10</td><td>Wippli wrapper: form + review queue</td><td>Owner uses it without you present</td></tr>
               <tr><td class="wk">10–11</td><td>Treatment period, weekly build log</td><td>Four weeks of comparable data</td></tr>
@@ -557,16 +557,11 @@ python3 scripts/validate-workflows.py workflows/*.json</code></pre>
           <li><strong>No business by week 3.</strong> Switch to observe-only and say so in methods. Do not keep waiting into week 6.</li>
           <li><strong>No baseline by week 4.</strong> Fatal to the results chapter. Stop building and fix it.</li>
           <li><strong>W3 drafts are poor.</strong> A finding, not a failure. Report where model judgement was insufficient and what data would have been needed.</li>
-          <li><strong>The owner stops using it.</strong> The most informative outcome available. Interview immediately, while the reason is fresh — adoption failure in SME automation is under-reported precisely because students bury it.</li>
+          <li><strong>The owner stops using it.</strong> The most informative outcome available. Interview immediately, while the reason is fresh, adoption failure in SME automation is under-reported precisely because students bury it.</li>
         </ul>
 
         <h3>Theory anchors</h3>
-        <ul>
-          <li><strong>BPM lifecycle</strong> — Dumas et al., <em>Fundamentals of Business Process Management</em>.</li>
-          <li><strong>RPA task-selection criteria</strong> — your three-axis scoring is a contribution against this baseline.</li>
-          <li><strong>Levels of automation</strong> — Parasuraman &amp; Sheridan. This is where your question actually lives.</li>
-          <li><strong>Technology adoption in SMEs</strong> — for the discussion, on why the constraint is so rarely the technology.</li>
-        </ul>
+        <p>Four places to anchor the literature chapter. Dumas et al., <em>Fundamentals of Business Process Management</em>, gives you the discovery-to-monitoring frame the whole method sits inside. The RPA task-selection literature is the baseline your three-axis scoring argues against, so read enough of it to say what yours adds. Parasuraman and Sheridan on levels of automation is where your actual question lives, and an examiner will expect you to have found it. Then, for the discussion chapter, the SME technology-adoption literature, on why the binding constraint is so rarely the technology.</p>
       </section>
 
     </main>

@@ -312,7 +312,7 @@ pre code{background:none;border:none;padding:0;font-size:12.5px;line-height:1.6;
   <header class="masthead">
     <p class="eyebrow">Master's thesis · starting kit</p>
     <h1>Where should the robot stop?</h1>
-    <p class="standfirst">You are building a real automation for a real small business — and then writing about the one decision that actually matters: which steps a computer can do on its own, and which ones a person still has to make.</p>
+    <p class="standfirst">You will build a working automation for a small business, run it for a month, and write up what happened. The workflows are already here. The thinking is the part that has to be yours.</p>
   </header>
 
   <main>
@@ -352,28 +352,28 @@ pre code{background:none;border:none;padding:0;font-size:12.5px;line-height:1.6;
         </div>
       </figure>
 
-      <p>The automation does all five. But it is not allowed to <strong>send a price</strong> on its own — it writes a draft, and a person checks it before it goes out.</p>
+      <p>The automation runs all five steps. It is not allowed to <strong>send a price</strong> on its own, though. It drafts one, and a person checks it before it goes out.</p>
 
       <div class="hero-note">
-        <p><strong>That one rule is your thesis.</strong> Not &ldquo;I built an automation&rdquo; — anyone can say that. Yours is: <em>here is exactly where I let the computer decide, here is where I did not, and here is the evidence I was right.</em></p>
+        <p><strong>That rule is the thesis.</strong> Anyone can build an automation and say so. The part worth a master&rsquo;s is the argument underneath it: you let the computer handle four of these steps and not the fifth, and you can show why.</p>
       </div>
 
       <div class="twocol">
         <div class="half">
           <h4><span class="tick">Let it decide</span></h4>
-          <p>The job is much the same every time, and a mistake is easy to undo. Sorting an incoming message. Suggesting appointment times. Sending a polite reminder.</p>
+          <p>Much the same every time, and cheap to undo when it goes wrong. Sorting incoming messages. Suggesting appointment times. Sending a reminder.</p>
         </div>
         <div class="half">
           <h4><span class="cross">Keep a person</span></h4>
-          <p>Every case is different, and a mistake costs real money, safety or trust. Pricing the work. Anything a customer cannot un-see once you have sent it.</p>
+          <p>Different every time, and expensive when it goes wrong. Pricing the work. Anything a customer cannot un-see once it has left your outbox.</p>
         </div>
       </div>
     </section>
 
     <section id="pick">
       <div class="sec-head"><span class="sec-num">02</span><h2>Pick a kind of business</h2></div>
-      <p class="lede">The same five workflows are ready for five different businesses. They all share one skeleton — what changes is the vocabulary, the price list, and where the line between computer and person falls.</p>
-      <p>You only need <strong>one</strong> for the thesis. The other four are there so you can say something about whether the idea travels, which is a good thing to be able to say.</p>
+      <p class="lede">The same five workflows come ready for five different businesses. One skeleton underneath, with the vocabulary, the price list and the approval rules swapped out.</p>
+      <p>You need <strong>one</strong> of them. The other four are there so you can say whether the idea travels between industries, which is worth a chapter on its own.</p>
 
       <div class="bizgrid">
           <article class="biz">
@@ -389,7 +389,7 @@ pre code{background:none;border:none;padding:0;font-size:12.5px;line-height:1.6;
           <article class="biz">
             <h3>Dental practice</h3>
             <p class="what">A consultation, then a treatment plan with prices.</p>
-            <p class="why">The risky part moves to the <em>front</em>. Sorting symptoms from a message is nearly a medical decision — but once the diagnosis is fixed, the pricing is almost automatic. The opposite shape to the contractor.</p>
+            <p class="why">The risky part moves to the <em>front</em>. Sorting symptoms from a message is nearly a medical decision. Once the diagnosis is fixed, though, the pricing is almost mechanical. The opposite shape to the contractor.</p>
             <p class="links">
               <a href="https://github.com/roko4414/automation-thesis-kit/tree/main/industries/dental/workflows">5 workflows</a>
               <a href="https://roko4414.github.io/automation-thesis-kit/industries/dental/enquiries.json">12 example messages</a>
@@ -399,7 +399,7 @@ pre code{background:none;border:none;padding:0;font-size:12.5px;line-height:1.6;
           <article class="biz">
             <h3>Physiotherapy practice</h3>
             <p class="what">An assessment, then a course of treatment. An insurer often pays.</p>
-            <p class="why">The strongest argument in the whole kit for keeping a person involved. Some messages describe symptoms that must reach a human immediately — and one of them is written so calmly that a careless system would book it for next Tuesday.</p>
+            <p class="why">The strongest argument in the kit for keeping a person involved. Some messages describe symptoms that need a human straight away. One of them is written so calmly that a careless system would just book it for next Tuesday.</p>
             <p class="links">
               <a href="https://github.com/roko4414/automation-thesis-kit/tree/main/industries/wellness/workflows">5 workflows</a>
               <a href="https://roko4414.github.io/automation-thesis-kit/industries/wellness/enquiries.json">12 example messages</a>
@@ -409,7 +409,7 @@ pre code{background:none;border:none;padding:0;font-size:12.5px;line-height:1.6;
           <article class="biz">
             <h3>Tax &amp; accounting firm</h3>
             <p class="what">A scoping call, then an engagement letter.</p>
-            <p class="why">There is no visit at all — the work is described, never inspected. And you have to check for a conflict of interest <em>before</em> you can even quote, which no other business here needs.</p>
+            <p class="why">There is no visit at all. The work gets described to you, never inspected. You also have to check for a conflict of interest <em>before</em> quoting, which no other business here needs.</p>
             <p class="links">
               <a href="https://github.com/roko4414/automation-thesis-kit/tree/main/industries/advisory/workflows">5 workflows</a>
               <a href="https://roko4414.github.io/automation-thesis-kit/industries/advisory/enquiries.json">12 example messages</a>
@@ -419,7 +419,7 @@ pre code{background:none;border:none;padding:0;font-size:12.5px;line-height:1.6;
           <article class="biz">
             <h3>Photo &amp; video studio</h3>
             <p class="what">A call or a location visit, then a proposal.</p>
-            <p class="why">Price depends on where the pictures end up, not how long the shoot takes. The client who says &ldquo;just a few photos&rdquo; is usually the one planning a national campaign.</p>
+            <p class="why">Price depends on where the pictures end up rather than how long the shoot takes. The client who asks for &ldquo;just a few photos&rdquo; is usually the one planning a national campaign.</p>
             <p class="links">
               <a href="https://github.com/roko4414/automation-thesis-kit/tree/main/industries/studio/workflows">5 workflows</a>
               <a href="https://roko4414.github.io/automation-thesis-kit/industries/studio/enquiries.json">12 example messages</a>
@@ -428,28 +428,22 @@ pre code{background:none;border:none;padding:0;font-size:12.5px;line-height:1.6;
           </article>
       </div>
 
-      <div class="note">
-        <span class="tag">Which one?</span>
-        <p>Whichever kind of business you can actually get access to. A real owner who will let you watch how they work for a few weeks is worth far more than picking the most interesting one on paper. If you have no lead yet, start with the electrical contractor — it is the easiest to follow.</p>
-      </div>
+      <p>Pick whichever kind of business you can actually get access to. An owner who will let you sit and watch for a few weeks beats the most interesting industry on paper, every time. If you have no lead yet, read the electrical contractor first. It is the easiest to follow.</p>
     </section>
 
     <section id="do">
       <div class="sec-head"><span class="sec-num">03</span><h2>What you actually do</h2></div>
 
       <ol class="steps">
-        <li><strong>Find a small business that will let you watch.</strong> Three to eight people is the right size. This is the hardest step and the one everything else depends on, so start it now rather than later.</li>
-        <li><strong>Watch how they work now, before changing anything.</strong> Follow five or six jobs from first message to getting paid. Write down how long each step takes. Boring, and completely essential — without it you have nothing to compare against at the end.</li>
-        <li><strong>Decide where the line goes.</strong> For each step, ask two questions: is it different every time, and how bad is it if it goes wrong? A lot the same and harmless if wrong &rarr; let the computer do it. Different every time and expensive if wrong &rarr; keep a person.</li>
-        <li><strong>Import the workflows and get them running.</strong> The files are ready. You will change things to fit your business — that is expected, and the changes you make are worth writing about.</li>
-        <li><strong>Run it for a month and measure.</strong> Especially: when the computer drafts a price, what does the owner change before sending it? That single question is the heart of your results.</li>
-        <li><strong>Write it up.</strong> What you built, why you drew the line where you did, and what happened.</li>
+        <li><strong>Find a small business that will let you watch.</strong> Three to eight people is about right. This is the hardest step and everything else depends on it, so start now.</li>
+        <li><strong>Watch how they work now, before changing anything.</strong> Follow five or six jobs from first message to getting paid, and write down how long each step takes. Boring, and completely essential. Without it you have nothing to compare against at the end.</li>
+        <li><strong>Draw your own line.</strong> For each step, two questions: is it different every time, and how bad is it if it goes wrong? Mostly the same and harmless when wrong, let the computer do it. Different every time and expensive when wrong, keep a person on it. Your answers may not match mine, and where they differ is worth writing about.</li>
+        <li><strong>Import the workflows and get them running.</strong> The files are ready to load. You will change things to fit your business, and those changes are evidence, so keep a note of them.</li>
+        <li><strong>Run it for a month and measure.</strong> Above all: when the computer drafts a price, what does the owner change before sending it?</li>
+        <li><strong>Write it up.</strong> What you built, why you drew the line where you did, and what actually happened.</li>
       </ol>
 
-      <div class="note">
-        <span class="tag">The best thing you can find</span>
-        <p>If the owner stops correcting one part of the drafted price after a few weeks but keeps correcting another part — that is your finding. It shows exactly where the computer earned trust and where it did not, with evidence rather than opinion.</p>
-      </div>
+      <p>One thing to watch for while it runs. If the owner stops correcting one part of the drafted price after a few weeks but carries on correcting another part, that is your result. It shows where the computer earned trust and where it did not, and you will have the numbers rather than an opinion.</p>
     </section>
 
     <section id="where">
@@ -467,20 +461,20 @@ pre code{background:none;border:none;padding:0;font-size:12.5px;line-height:1.6;
       </div>
 
       <h3>Before you import anything</h3>
-      <p>Run this — it catches the kind of mistake that lets a workflow load and then quietly behave wrong:</p>
+      <p>Run this first. It catches the kind of mistake that lets a workflow load successfully and then quietly behave wrong:</p>
       <pre class="cmd"><code>python3 scripts/validate-workflows.py industries/*/workflows/*.json</code></pre>
 
       <div class="note">
         <span class="tag">Worth knowing</span>
-        <p>These workflows have been checked carefully but have not been run on a live system yet. Expect to fix a couple of small things when you first import one. That is normal, and noting what you had to fix is genuinely useful material for the write-up.</p>
+        <p>These workflows have been checked carefully, but nobody has run them on a live system yet. Expect to fix a couple of small things the first time you import one. That is normal. Write down what you had to fix, because it is useful material later.</p>
       </div>
 
-      <p class="more"><a href="https://roko4414.github.io/automation-thesis-kit/reference.html">All the detail →</a> &nbsp;·&nbsp; the scoring behind each decision, how to measure properly, and the technical reference. Only when you want it — you do not need it to start.</p>
+      <p class="more"><a href="https://roko4414.github.io/automation-thesis-kit/reference.html">All the detail →</a> &nbsp;·&nbsp; the scoring behind each decision, how to measure it properly, and the technical reference. None of it is needed to start.</p>
     </section>
 
   </main>
 
   <footer>
-    <p>Starting kit · workflows checked but not yet run live · the businesses described are composites built from how these trades generally work, not real companies</p>
+    <p>Starting kit · workflows checked but not yet run live · the businesses described are composites of how these trades generally work, not real companies</p>
   </footer>
 </div>

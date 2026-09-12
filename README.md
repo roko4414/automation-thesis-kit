@@ -9,7 +9,7 @@ A starting kit for a master's thesis on workflow automation.
 Almost every small business runs the same five steps: a message arrives, you book a time
 to look at the work, you send a price, you chase it up, you finish and invoice.
 
-This kit automates all five — except sending the price. That step is drafted by the
+This kit automates all five, except sending the price. That step is drafted by the
 system and approved by a person, always.
 
 That one rule is the thesis. Not "I built an automation", but: *here is exactly where I
@@ -29,7 +29,7 @@ The same five workflows, specialised for five industries. Each folder under
 | `studio` | Photo and video studio | Distance is a price input rather than a refusal, and price tracks image usage rights rather than hours worked. |
 
 Only one is needed for a thesis. The other four exist so something can be said about
-whether the pattern travels — which is itself a finding, either way.
+whether the pattern travels, which is itself a finding either way.
 
 ## Layout
 
@@ -61,7 +61,7 @@ python3 scripts/build_workflows.py      # rebuilds all 25 workflow files
 ```
 
 Adding a sixth industry means writing a `pack.json` and rerunning that. If it ever needs
-surgery on the workflows themselves, that is worth writing down — it is the
+surgery on the workflows themselves, that is worth writing down. It is the
 transferability claim failing, which is a real result.
 
 ## Status
